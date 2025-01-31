@@ -1,3 +1,9 @@
+data/
+exps/
+Python-RVO2/
+venv/
+sim/*_dataset/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

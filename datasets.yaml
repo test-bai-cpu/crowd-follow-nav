@@ -1,0 +1,15 @@
+---
+datasets:
+  - eth
+#  - eth
+#  - ucy
+#  - ucy
+#  - ucy
+#  - atc
+flags:
+  - 0
+#  - 1
+#  - 0
+#  - 1
+#  - 2
+#  - 0
