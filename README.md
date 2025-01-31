@@ -33,3 +33,13 @@ cd ..
 ```
 tar -xvf datasets.tar
 ```
+
+# Usage
+- Make a data folder
+```
+mkdir data
+```
+- Use `test_case_helper.py` to check dataset pedestrian flows. Experiment with check regions and robot start and goal locations.
+- Copy `check_regions` and `start_end_pos` to `test_case_generation.py`.
+- Use `test_case_generation.py` to generate test cases.
+- Initialize the simulator using the generated test files. See `main.py` for an example.
