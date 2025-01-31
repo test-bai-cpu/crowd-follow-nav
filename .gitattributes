@@ -1,0 +1,2 @@
+*.zip text !filter !merge !diff
+*.json text !filter !merge !diff
