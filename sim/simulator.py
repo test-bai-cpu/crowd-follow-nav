@@ -9,6 +9,13 @@ import matplotlib.pyplot as plt
 from sim.environment import Environment
 from sim.mpc.group import grouping, draw_all_social_spaces
 
+# Imports from sim.metrics
+# get_path_length
+# get_path_smoothness
+# get_motion_smoothness
+# get_min_ped_dist
+from sim.metrics import *
+
 class Simulator(object):
     # This class maintains the dataset based simulator
     # Each human in the simulator can follow the playback from the dataset
@@ -28,6 +35,7 @@ class Simulator(object):
 
         self.dt = args.dt
         self.robot_speed = args.robot_speed
+        self.differential = args.differential
         self.collision_radius = args.collision_radius
         self.goal_radius = args.goal_radius
         self.time_horizon = args.time_horizon
@@ -38,6 +46,7 @@ class Simulator(object):
         self.history = args.history
         self.react = args.react
         self.animate = args.animate
+        self.record = args.record
         self.edge = args.edge
         if self.laser:
             self.ped_size = args.ped_size
@@ -47,14 +56,19 @@ class Simulator(object):
 
         self.pred_method = args.pred_method
         self.logger.info("Simulator initialized.")
+        self.logger.info("Differential: {}".format(self.differential))
         self.logger.info("Group: {}".format(self.group))
         self.logger.info("Laser: {}".format(self.laser))
         self.logger.info("Pred: {}".format(self.pred))
         self.logger.info("History: {}".format(self.history))
         self.logger.info("React: {}".format(self.react))
         self.logger.info("Animate: {}".format(self.animate))
+        self.logger.info("Record: {}".format(self.record))
         self.logger.info("Edge: {}".format(self.edge))
         self.logger.info("Pred method: {}".format(self.pred_method))
+
+        if self.record:
+            self.obs_history = []
 
         if self.history:
             self.history_steps = args.history_steps
@@ -295,6 +309,28 @@ class Simulator(object):
             self.laser_group_labels = grouping(self.laser_pos, self.laser_vel, tmp_group_params)
         return
     
+    def _extract_observation(self, observation_dict):
+        # Extract information from observation dictionary that is useful to record
+        # Useful is defined as needed for evaluation after the trail ends
+
+        record_dict = {}
+        record_dict['success'] = observation_dict['success']
+        record_dict['num_pedestrians'] = observation_dict['num_pedestrians']
+        record_dict['robot_pos'] = observation_dict['robot_pos']
+        record_dict['robot_vel'] = observation_dict['robot_vel']
+        record_dict['robot_th'] = observation_dict['robot_th']
+        record_dict['pedestrians_pos'] = observation_dict['pedestrians_pos']
+        record_dict['pedestrians_vel'] = observation_dict['pedestrians_vel']
+        record_dict['pedestrians_idx'] = observation_dict['pedestrians_idx']
+        record_dict['pedestrians_goal'] = observation_dict['pedestrians_goal']
+        if self.laser:
+            record_dict['laser_pos'] = observation_dict['laser_pos']
+            record_dict['laser_vel'] = observation_dict['laser_vel']
+        if self.group:
+            record_dict['group_labels'] = observation_dict['group_labels']
+            record_dict['laser_group_labels'] = observation_dict['laser_group_labels']
+        return record_dict
+    
     def _get_observation_dict(self, success):
         # get the observation dictionary
 
@@ -303,6 +339,7 @@ class Simulator(object):
         observation_dict['num_pedestrians'] = self.num_ped
         observation_dict['robot_pos'] = self.robot_pos
         observation_dict['robot_vel'] = self.robot_vel
+        observation_dict['robot_th'] = self.robot_th
         observation_dict['robot_goal'] = self.goal_pos
         observation_dict['pedestrians_pos'] = np.array(self.pedestrians_pos)
         observation_dict['pedestrians_vel'] = np.array(self.pedestrians_vel)
@@ -317,11 +354,14 @@ class Simulator(object):
             observation_dict['laser_vel_history'] = self.laser_vel_history
         if self.group:
             observation_dict['group_labels'] = np.array(self.group_labels)
-            observation_dict['laser_group_labels'] = np.array(self.laser_group_labels)
+            observation_dict['laser_group_labels'] = np.array(self.laser_group_labels) # empty if laser not enabled
 
         return observation_dict
     
     def reset(self, case_id=None):
+        # reset the environment
+        # if case_id is None, then select the next case from the list
+        
         if case_id is None:
             case = self.case_list[self.case_id_list[self.case_pt]]
             self.case_pt += 1
@@ -344,6 +384,8 @@ class Simulator(object):
         self.time = self.start_frame
         self.robot_pos = np.array(self.start_pos)
         self.robot_vel = np.array([0, 0])
+        # by default, the robot faces the goal
+        self.robot_th = np.arctan2(self.goal_pos[1] - self.robot_pos[1], self.goal_pos[0] - self.robot_pos[0])
         self.robot_path = np.array([self.robot_pos])
 
         # get the pedestrian properties
@@ -358,6 +400,9 @@ class Simulator(object):
 
         # return the initial observation
         observation_dict = self._get_observation_dict(False)
+        if self.record:
+            record_dict = self._extract_observation(observation_dict)
+            self.obs_history = [record_dict]
 
         if self.animate:
             self.fig = plt.figure()
@@ -365,6 +410,8 @@ class Simulator(object):
 
             frame = self.render()
             self.image_sequences.append(frame)
+
+        self.fail_reason = None
 
         return observation_dict
     
@@ -394,7 +441,7 @@ class Simulator(object):
         # ped_goals is the pedestrian goals
 
         robo_goal = np.array(self.goal_pos)
-        dt = self
+        dt = self.dt
         t_horizon = self.time_horizon
         robo_max_v = self.robot_speed
         # setting pedestrian max speed to robot max speed
@@ -430,8 +477,8 @@ class Simulator(object):
     def step(self, action):
         # action is the robot velocity
         # action is a 2D numpy array
-        # action[0] is the x velocity
-        # action[1] is the y velocity
+        # action[0] is the x velocity, or linear velocity if differential drive
+        # action[1] is the y velocity, or angular velocity if differential drive
         # action is in m/s
 
         if self.done:
@@ -442,8 +489,29 @@ class Simulator(object):
 
         # update robot position
         old_robot_pos = self.robot_pos
-        self.robot_pos = self.robot_pos + action * self.dt
-        self.robot_vel = action
+        if not self.differential:
+            self.robot_pos = self.robot_pos + action * self.dt
+            self.robot_vel = action
+            self.robot_th = np.arctan2(action[1], action[0])
+        else:
+            # get the robot's nice position by following a circular arc
+            v = action[0]
+            w = action[1]
+            th = self.robot_th
+            t = self.dt
+            if w == 0:
+                displacement = np.array([
+                    v * t * np.cos(th),
+                    v * t * np.sin(th)
+                ])
+            else:
+                displacement = np.array([
+                    v/w * (np.sin(th + w * t) - np.sin(th)),
+                    -v/w * (np.cos(th + w * t) - np.cos(th))
+                ])
+            self.robot_pos = self.robot_pos + displacement
+            self.robot_vel = action
+            self.robot_th = self.robot_th + w * t
         self.robot_path = np.append(self.robot_path, [self.robot_pos], axis=0)
 
         # update pedestrian positions
@@ -518,10 +586,12 @@ class Simulator(object):
         if self.time >= self.time_limit:
             success = False
             self.done = True
+            self.fail_reason = "Time"
             self.logger.info("Time limit exceeded. Terminating episode.")
         elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
             success = False
             self.done = True
+            self.fail_reason = "Collision"
             self.logger.info("Collision detected. Terminating episode.")
         elif np.linalg.norm(self.robot_pos - self.goal_pos) < self.goal_radius:
             self.done = True
@@ -535,6 +605,9 @@ class Simulator(object):
         
         # update the observation
         observation_dict = self._get_observation_dict(success)
+        if self.record:
+            record_dict = self._extract_observation(observation_dict)
+            self.obs_history.append(record_dict)
 
         if self.animate:
             frame = self.render()
@@ -545,6 +618,50 @@ class Simulator(object):
 
         # return the observation, reward(not used), done, and info
         return observation_dict, 0, self.done, success
+    
+    def evaluate(self, output=False):
+        # evaluate the results of the simulation trial
+        # can evaluate in the middle of a trial, but a warning will show up
+
+        result_dict = {}
+
+        if not self.record:
+            self.logger.error("Recording is not enabled.")
+            raise ValueError("Recording is not enabled.")
+        
+        if len(self.obs_history) == 0:
+            self.logger.warning("No data to evaluate.")
+            return result_dict
+        
+        if not self.done:
+            self.logger.warning("Simulation of this trial is not finished.")
+
+        # Is the trial a success
+        result_dict['success'] = self.obs_history[-1]['success']
+        result_dict['fail_reason'] = self.fail_reason
+        result_dict['navigation_time'] = (self.time - self.start_frame) * self.dt
+        result_dict['path_length'] = get_path_length(self.robot_path)
+        result_dict['path_smoothness'] = get_path_smoothness(self.robot_path)
+        result_dict['motion_smoothness'] = get_motion_smoothness(self.obs_history, self.dt)
+        result_dict['min_ped_dist'], result_dict['avg_ped_dist'] = get_min_ped_dist(self.obs_history)
+        if self.laser:
+            result_dict['min_laser_dist'], result_dict['avg_laser_dist'] = get_min_laser_dist(self.obs_history)
+
+        if output:
+            self.logger.info("Success: {}".format(result_dict['success']))
+            if not result_dict['success']:
+                self.logger.info("Fail reason: {}".format(result_dict['fail_reason']))
+            self.logger.info("Navigation time: {:.2f} s".format(result_dict['navigation_time']))
+            self.logger.info("Path length: {:.2f} m".format(result_dict['path_length']))
+            self.logger.info("Path smoothness: {:.2f}".format(result_dict['path_smoothness']))
+            self.logger.info("Motion smoothness: {:.2f}".format(result_dict['motion_smoothness']))
+            self.logger.info("Min pedestrian distance: {:.2f} m".format(result_dict['min_ped_dist']))
+            self.logger.info("Average pedestrian distance: {:.2f} m".format(result_dict['avg_ped_dist']))
+            if self.laser:
+                self.logger.info("Min laser distance: {:.2f} m".format(result_dict['min_laser_dist']))
+                self.logger.info("Average laser distance: {:.2f} m".format(result_dict['avg_laser_dist']))
+        
+        return result_dict
 
     def _write_video(self):
         # write the video of the simulation

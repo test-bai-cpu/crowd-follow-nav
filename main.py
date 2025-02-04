@@ -38,10 +38,22 @@ if __name__ == "__main__":
         flag = flags[i]
         envs_arg.append((dset, flag))
     args.envs = envs_arg
+
+    # DANGER!!! temporarily configure args
+    args.group = False
+    args.react = True
+    args.laser = False
+    args.record = True
+    args.animate = True
     
     sim = Simulator(args, 'data/eth_0.json', logger)
     obs = sim.reset(100)
     done = False
     while not done:
-        action = np.array([1, 0])
+        goal = obs['robot_goal']
+        robot_pos = obs['robot_pos']
+        goal_vec = goal - robot_pos
+        action = np.array(goal_vec / np.linalg.norm(goal_vec)) * args.robot_speed
+        #action = np.array([1, 0])
         obs, reward, done, info = sim.step(action)
+    sim.evaluate(output=True)
