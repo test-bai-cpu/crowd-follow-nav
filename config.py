@@ -1,4 +1,5 @@
 import argparse
+import sys
 import torch
 import numpy as np
 
@@ -25,7 +26,7 @@ def get_args():
         "--dset-path",
         type=str,
         default="sim",
-        help="file on which datasets to load"
+        help="base directory of the datasets"
     )
 
     parser.add_argument(
@@ -40,6 +41,13 @@ def get_args():
         type=float,
         default=1.75,
         help="maximum robot speed (avg human walking speed)"
+    )
+
+    parser.add_argument(
+        "--differential",
+        action='store_true',
+        default=False,
+        help="if robot is differential drive"
     )
 
     parser.add_argument(
@@ -95,8 +103,15 @@ def get_args():
     parser.add_argument(
         "--animate",
         action='store_true',
-        default=True,
+        default=False,
         help="if results will be saved into a video"
+    )
+
+    parser.add_argument(
+        "--record",
+        action='store_true',
+        default=False,
+        help="if all the trajectories will be recorded for evaluation"
     )
 
     parser.add_argument(
@@ -162,7 +177,7 @@ def get_args():
         "--num-rollouts",
         type=int,
         default=12,
-        help="number of rollouts for MPC"
+        help="number of general direction rollouts for MPC"
     )
 
     # device configuration
@@ -172,7 +187,11 @@ def get_args():
         default=False,
         help='disables CUDA training')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except:
+        parser.print_help()
+        sys.exit(0)
     args.fps = 1 / args.dt
     args.time_horizon = args.dt * args.future_steps
     args.cuda = not args.no_cuda and torch.cuda.is_available()
