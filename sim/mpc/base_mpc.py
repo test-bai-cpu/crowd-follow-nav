@@ -15,6 +15,8 @@ class BaseMPC(ABC):
 
         self.rollouts = None
         self.rollout_costs = None
+        self.pos_predictions = None
+        self.vel_predictions = None
         return
 
     def generate_rollouts(self, start_config):
@@ -25,8 +27,9 @@ class BaseMPC(ABC):
         vel = self.robot_speed
 
         angles = np.linspace(np.radians(-180), np.radians(180), num_rollouts, endpoint=True)
-        rollouts = np.zeros((num_rollouts * 9 + 1, num_rollouts, 2), dtype=np.float32)
+        rollouts = np.zeros((num_rollouts * 9 + 1, len_horizon, 2), dtype=np.float32)
         rollouts[:, 0] = start_config
+        # radius of curvature, assuming the full curve is a quater circle.
         R1 = vel * dt * (len_horizon - 1) / (np.pi / 2)
 
         # Generate rollouts
@@ -35,7 +38,7 @@ class BaseMPC(ABC):
         # Each one is along a different direction.
         # The first group is the fastest, the second group is 2/3 of the fastest, and the third group is 1/3 of the fastest
         # The last one is the stationary rollout.
-        for i in range(1, len_horizon):
+        for i in range(1, len_horizon + 1):
             rollouts[:num_rollouts, i, 0] = start_config[0] + (vel * dt * i * np.sin(angles[:]))
             rollouts[:num_rollouts, i, 1] = start_config[1] + (vel * dt * i * np.cos(angles[:]))
             rollouts[num_rollouts:(2*num_rollouts), i, 0] = \
