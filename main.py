@@ -5,6 +5,7 @@ import numpy as np
 
 from config import get_args, check_args
 from sim.simulator import Simulator
+from sim.mpc.ped_nopred_mpc import PedNoPredMPC
 
 if __name__ == "__main__":
     # configue and logs
@@ -47,13 +48,10 @@ if __name__ == "__main__":
     args.animate = True
     
     sim = Simulator(args, 'data/eth_0.json', logger)
+    agent = PedNoPredMPC(args, logger)
     obs = sim.reset(100)
     done = False
     while not done:
-        goal = obs['robot_goal']
-        robot_pos = obs['robot_pos']
-        goal_vec = goal - robot_pos
-        action = np.array(goal_vec / np.linalg.norm(goal_vec)) * args.robot_speed
-        #action = np.array([1, 0])
+        action = agent.act(obs)
         obs, reward, done, info = sim.step(action)
     sim.evaluate(output=True)

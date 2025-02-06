@@ -33,8 +33,11 @@ def get_min_ped_dist(obs_history):
     for t in range(time):
         robot_pos = obs_history[t]['robot_pos']
         pedestrians_pos = obs_history[t]['pedestrians_pos']
-        min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
-        min_dists.append(min_dist)
+        if len(pedestrians_pos) == 0:
+            continue
+        else:
+            min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
+            min_dists.append(min_dist)
 
     return np.min(min_dists), np.mean(min_dists)
 
@@ -47,7 +50,10 @@ def get_min_laser_dist(obs_history):
     for t in range(time):
         robot_pos = obs_history[t]['robot_pos']
         pedestrians_pos = obs_history[t]['laser_pos']
-        min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
-        min_dists.append(min_dist)
+        if len(pedestrians_pos) == 0:
+            continue
+        else:
+            min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
+            min_dists.append(min_dist)
 
     return np.min(min_dists), np.mean(min_dists)
