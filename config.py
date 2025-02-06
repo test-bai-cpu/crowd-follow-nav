@@ -174,7 +174,14 @@ def get_args():
 
     # MPC configuration
     parser.add_argument(
-        "--num-rollouts",
+        "--num-linear",
+        type=int,
+        default=12,
+        help="number of general direction rollouts for MPC"
+    )
+
+    parser.add_argument(
+        "--num-angular",
         type=int,
         default=12,
         help="number of general direction rollouts for MPC"

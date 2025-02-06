@@ -47,7 +47,6 @@ class Simulator(object):
         self.react = args.react
         self.animate = args.animate
         self.record = args.record
-        self.edge = args.edge
         if self.laser:
             self.ped_size = args.ped_size
             self.laser_range = args.laser_range
@@ -64,7 +63,6 @@ class Simulator(object):
         self.logger.info("React: {}".format(self.react))
         self.logger.info("Animate: {}".format(self.animate))
         self.logger.info("Record: {}".format(self.record))
-        self.logger.info("Edge: {}".format(self.edge))
         self.logger.info("Pred method: {}".format(self.pred_method))
 
         if self.record:
@@ -392,6 +390,9 @@ class Simulator(object):
         self._update_from_dataset()
         self.num_ped = len(self.pedestrians_idx)
 
+        if self.react:
+            self.history_idxes = self.pedestrians_idx.copy() # keep track of which pedestrians have showed up
+
         if self.laser:
             self._simulate_laser()
 
@@ -557,7 +558,8 @@ class Simulator(object):
                 # add new pedestrians
                 current_pedestrians_idx = self.env.video_pedidx_matrix[self.time]
                 for i in range(len(current_pedestrians_idx)):
-                    if current_pedestrians_idx[i] not in new_pedestrians_idx:
+                    if current_pedestrians_idx[i] not in self.history_idxes:
+                        self.history_idxes.append(current_pedestrians_idx[i])
                         new_pedestrians_idx.append(current_pedestrians_idx[i])
                         new_pedestrians_pos.append(self.env.video_position_matrix[self.time][i])
                         new_pedestrians_vel.append(self.env.video_velocity_matrix[self.time][i])
