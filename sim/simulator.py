@@ -353,6 +353,7 @@ class Simulator(object):
         if self.group:
             observation_dict['group_labels'] = np.array(self.group_labels)
             observation_dict['laser_group_labels'] = np.array(self.laser_group_labels) # empty if laser not enabled
+        observation_dict['personal_size'] = self.group_params['size_const']
 
         return observation_dict
     
