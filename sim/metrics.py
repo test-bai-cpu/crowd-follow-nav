@@ -9,7 +9,8 @@ def get_path_length(traj):
 def get_path_smoothness(traj):
     # Calculate path smoothness of a trajectory
     # return the average of the absolute angles between the vectors of the trajectory
-    angles = np.sum(traj[1:] * traj[:-1], axis=1) / (np.linalg.norm(traj[1:], axis=1) * np.linalg.norm(traj[:-1], axis=1))
+    norm_product = (np.linalg.norm(traj[1:], axis=1) * np.linalg.norm(traj[:-1], axis=1)) + 1e-9
+    angles = np.sum(traj[1:] * traj[:-1], axis=1) / norm_product
     return np.mean(np.abs(np.arccos(angles)))
 
 def get_motion_smoothness(obs_history, dt):
@@ -33,11 +34,10 @@ def get_min_ped_dist(obs_history):
     for t in range(time):
         robot_pos = obs_history[t]['robot_pos']
         pedestrians_pos = obs_history[t]['pedestrians_pos']
-        if len(pedestrians_pos) == 0:
+        if pedestrians_pos.shape[0] == 0:
             continue
-        else:
-            min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
-            min_dists.append(min_dist)
+        min_dist = np.min(np.linalg.norm(pedestrians_pos - robot_pos, axis=1))
+        min_dists.append(min_dist)
 
     return np.min(min_dists), np.mean(min_dists)
 

@@ -44,7 +44,7 @@ def get_args():
     parser.add_argument(
         "--time-factor",
         type=int,
-        default=3,
+        default=30,
         help="for estimating time limit for each case"
     )
 

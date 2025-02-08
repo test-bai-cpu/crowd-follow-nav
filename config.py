@@ -46,21 +46,21 @@ def get_args():
     parser.add_argument(
         "--differential",
         action='store_true',
-        default=False,
+        default=True,
         help="if robot is differential drive"
     )
 
     parser.add_argument(
         "--collision_radius",
         type=float,
-        default=0.5,
+        default=0.1,
         help="in navigation smaller than this means collision"
     )
 
     parser.add_argument(
         "--goal_radius",
         type=float,
-        default=1.0,
+        default=0.5,
         help="in navigation smaller than this means goal reached"
     )
 
@@ -68,7 +68,7 @@ def get_args():
     parser.add_argument(
         "--group",
         action='store_true',
-        default=False,
+        default=True,
         help="if grouping is enabled"
     )
 
@@ -103,14 +103,14 @@ def get_args():
     parser.add_argument(
         "--animate",
         action='store_true',
-        default=False,
+        default=True,
         help="if results will be saved into a video"
     )
 
     parser.add_argument(
         "--record",
         action='store_true',
-        default=False,
+        default=True,
         help="if all the trajectories will be recorded for evaluation"
     )
 
@@ -193,6 +193,12 @@ def get_args():
         action='store_true',
         default=False,
         help='disables CUDA training')
+
+    parser.add_argument(
+        '--use-a-omega',
+        action='store_true',
+        default=False,
+        help='set to true if use a and omega as control inputs, otherwise use speed and omega')
 
     try:
         args = parser.parse_args()
