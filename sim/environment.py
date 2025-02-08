@@ -62,6 +62,7 @@ class Environment(object):
         return
     
     def select_env(self, env):
+        print(self.env_dict)
         # env is (env_name, env_flag)
         self.env = self.env_dict[env]
         return self.env
