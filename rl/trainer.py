@@ -5,7 +5,8 @@ import torch.optim as optim
 
 from os import path
 
-from gym import spaces
+# from gym import spaces
+from gymnasium import spaces
 
 from rl_agent import SAC
 from replay_buffer import ReplayBuffer
