@@ -199,7 +199,14 @@ def get_args():
         action='store_true',
         default=False,
         help='set to true if use a and omega as control inputs, otherwise use speed and omega')
-
+    
+    parser.add_argument(
+        '--atc-file-num',
+        type=int,
+        default=0,
+        help='the number of the atc file to use')
+    
+        
     try:
         args = parser.parse_args()
     except:
