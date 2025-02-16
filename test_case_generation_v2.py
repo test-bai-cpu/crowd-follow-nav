@@ -17,6 +17,9 @@ from sim.data_loader import DataLoader
 # a test case will be generated assumeing the robot is driving
 # on a linear speed of robot_speed from the specified start_end_pos.
 
+
+#### Versin: Take one pedestrian in the group, using the start / end position to set the robot path. And remove this person observation.
+
 def get_args():
     parser = argparse.ArgumentParser(description='test_case_generator')
 

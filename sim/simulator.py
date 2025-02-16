@@ -56,6 +56,8 @@ class Simulator(object):
             self.laser_res = args.laser_res
             self.laser_noise = args.laser_noise
 
+        self.case_id = None
+
         # for crowd follow debugging
         self.follow_pos = None
         self.follow_vel = None
@@ -367,6 +369,8 @@ class Simulator(object):
     
     def reset(self, case_id=None):
 
+        self.case_id = case_id
+        
         # clean the folder figs
         if self.animate:
             figs_dir = os.path.join(self.output_dir, 'figs')
@@ -498,7 +502,21 @@ class Simulator(object):
 
         return ped_pos_new, ped_vel_new
     
-    def step(self, action, follow_pos, follow_vel):
+    def get_dynamics(self, v, w, th):
+        if w == 0 or not self.differential: # get the robot's nice position by following a circular arc
+            displacement = np.array([
+                v * np.cos(th) * self.dt,
+                v * np.sin(th) * self.dt
+            ])
+        else:
+            displacement = np.array([
+                v/w * (np.sin(th + w * self.dt) - np.sin(th)),
+                -v/w * (np.cos(th + w * self.dt) - np.cos(th))
+            ])
+            
+        return displacement
+    
+    def step(self, action, follow_pos=None, follow_vel=None):
         if follow_pos is not None and follow_vel is not None:
             self.follow_pos = follow_pos[0, :] # x, y
             self.follow_vel = follow_vel[0, :] # speed, motion_angle
@@ -519,52 +537,20 @@ class Simulator(object):
 
         # update robot position
         old_robot_pos = self.robot_pos
-        if not self.differential:
-            self.robot_pos = self.robot_pos + action * self.dt
-            self.robot_vel = action
-            self.robot_th = np.arctan2(action[1], action[0])
-        else:
-            # get the robot's nice position by following a circular arc
-            if self.use_a_omega: # use a, w as the controller output action
-                a = action[0]
-                w = action[1]
-                v = self.robot_vel[0]
-                th = self.robot_th
-                t = self.dt
-                if w == 0:
-                    displacement = np.array([
-                        v * t * np.cos(th),
-                        v * t * np.sin(th)
-                    ])
-                else:
-                    displacement = np.array([
-                        v/w * (np.sin(th + w * t) - np.sin(th)),
-                        -v/w * (np.cos(th + w * t) - np.cos(th))
-                    ])
-                v += a * t
-                self.robot_pos = self.robot_pos + displacement
-                th = mpc_utils.wrapTo2pi(th + w * t)
-                self.robot_vel = np.array([v,th])
-                self.robot_th = th
-            else: # use v, w as the controller output action
-                v = action[0]
-                w = action[1]
-                th = self.robot_th
-                t = self.dt
-                if w == 0:
-                    displacement = np.array([
-                        v * t * np.cos(th),
-                        v * t * np.sin(th)
-                    ])
-                else:
-                    displacement = np.array([
-                        v/w * (np.sin(th + w * t) - np.sin(th)),
-                        -v/w * (np.cos(th + w * t) - np.cos(th))
-                    ])
-                self.robot_pos = self.robot_pos + displacement
-                th = mpc_utils.wrapTo2pi(th + w * t)
-                self.robot_vel = np.array([v, th]) # set robot_vel to [v, theta]
-                self.robot_th = th
+        if self.use_a_omega: # use a, w as the controller output action
+            a, w = action[0], action[1]
+            v, th = self.robot_vel[0], self.robot_th
+            displacement = self.get_dynamics(v, w, th)
+            v += a * self.dt
+        else: # use v omega. use v, w as the controller output action
+            v, th = action[0], self.robot_th
+            w = action[1]
+            displacement = self.get_dynamics(v, w, th)
+        self.robot_pos = self.robot_pos + displacement
+        th = mpc_utils.wrapTo2pi(th + w * self.dt)
+        self.robot_vel = np.array([v, th]) # set robot_vel to [v, theta]
+        self.robot_th = th
+
         self.robot_path = np.append(self.robot_path, [self.robot_pos], axis=0)
 
         # update pedestrian positions
@@ -666,15 +652,15 @@ class Simulator(object):
         if self.animate:
             frame = self.render()
             self.image_sequences.append(frame)
-            ## save the image to the output directory
-            tmp_fig = plt.figure()
-            tmp_ax = tmp_fig.add_subplot(111)
-            self.render_for_save(tmp_ax)
-            tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
-            plt.close(tmp_fig)
+            ########### save the image to the output directory ##############
+            # tmp_fig = plt.figure()
+            # tmp_ax = tmp_fig.add_subplot(111)
+            # self.render_for_save(tmp_ax)
+            # tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
+            # plt.close(tmp_fig)
+            #################################################################
             if self.done:
                 self._write_video()
-
 
         # compute the reward
         
@@ -737,7 +723,9 @@ class Simulator(object):
         video_path = os.path.join(self.output_dir, 
                                 self.env_name + '_' +
                                 str(self.env_flag) + '_' +
-                                str(self.start_frame) +
+                                str(self.case_id) + '_' +
+                                str(self.start_frame) + '_' +
+                                str(self.time) +
                                 '.mp4')
         anim.save(video_path, writer=writer)
         #plt.show()
@@ -748,6 +736,11 @@ class Simulator(object):
         # render the current frame
 
         curr_frame = []
+        
+        img = plt.imread("localization_grid_white.jpg")
+        img_obj = plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=[-60, 80, -40, 20])
+        curr_frame.append(img_obj)
+        
         curr_frame.append(plt.scatter(self.start_pos[0], self.start_pos[1], c='g', s=10))
         curr_frame.append(plt.scatter(self.robot_path[:, 0], self.robot_path[:, 1], c='y', s=10))
         curr_frame.append(plt.scatter(self.goal_pos[0], self.goal_pos[1], c='m', s=10))
@@ -757,13 +750,17 @@ class Simulator(object):
             curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=10))
             u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
             curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))
-            
 
         pedestrians_pos = np.array(self.pedestrians_pos)
         pedestrians_vel = np.array(self.pedestrians_vel)
 
         if self.num_ped > 0:
             curr_frame.append(plt.scatter(pedestrians_pos[:, 0], pedestrians_pos[:, 1], c='r', s=25))
+            pedestrian_vel_rho = np.linalg.norm(pedestrians_vel, axis=1)
+            pedestrian_vel_theta = np.arctan2(pedestrians_vel[:, 1], pedestrians_vel[:, 0])
+            u, v = mpc_utils.pol2cart(pedestrian_vel_rho, pedestrian_vel_theta)
+            curr_frame.append(plt.quiver(pedestrians_pos[:, 0], pedestrians_pos[:, 1], u, v, color='r', scale=1, scale_units='xy', angles='xy'))
+            
             if self.laser:
                 curr_frame.append(plt.scatter(self.laser_pos[:, 0], self.laser_pos[:, 1], c='b', s=1))
                 if self.group:
@@ -812,12 +809,16 @@ class Simulator(object):
             u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
             curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))
             
-
         pedestrians_pos = np.array(self.pedestrians_pos)
         pedestrians_vel = np.array(self.pedestrians_vel)
 
         if self.num_ped > 0:
             curr_frame.append(ax.scatter(pedestrians_pos[:, 0], pedestrians_pos[:, 1], c='r', s=25))
+            pedestrian_vel_rho = np.linalg.norm(pedestrians_vel, axis=1)
+            pedestrian_vel_theta = np.arctan2(pedestrians_vel[:, 1], pedestrians_vel[:, 0])
+            u, v = mpc_utils.pol2cart(pedestrian_vel_rho, pedestrian_vel_theta)
+            curr_frame.append(plt.quiver(pedestrians_pos[:, 0], pedestrians_pos[:, 1], u, v, color='r', scale=1, scale_units='xy', angles='xy'))
+            
             if self.laser:
                 curr_frame.append(ax.scatter(self.laser_pos[:, 0], self.laser_pos[:, 1], c='b', s=1))
                 if self.group:

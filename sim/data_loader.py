@@ -45,7 +45,7 @@ class DataLoader():
     # ------                      of person j in frame i)
     #
 
-    def __init__(self, dataset, flag, target_fps=10, base_path=".", logger=None):
+    def __init__(self, dataset, flag=None, target_fps=10, base_path=".", logger=None):
         # Initialize data processor
         # Inputs:
         # dataset: can only be 'eth' or 'ucy'
@@ -150,22 +150,11 @@ class DataLoader():
         # Returns:
         # True if data reading is successful
 
-        if flag == 0:
-            date = '20121024'
-        elif flag == 1:
-            date = '20121114'
-        else:
-            self.logger.error('Flag for \'eth\' should be 0 or 1')
-            return False
-
-        # Read the human motion data from text file 
-        fname = os.path.join(self.base_path, "atc_dataset", "atc-" + date + ".csv")
+        # Read the human motion data from text file
+        fname = f"{self.base_path}/atc_dataset/split-20/1024-{flag}.csv"
 
         # atc_data = pd.read_csv(fname, header=None, names=["time", "person_id", "x", "y", "speed", "motion_angle"])
         atc_data = pd.read_csv(fname, header=None, names=["time", "person_id", "x", "y", "z", "velocity", "motion_angle", "facing_angle"])
-        
-        ### For debugging: get first 10% of the data
-        # atc_data = atc_data.head(int(len(atc_data) * 0.1))
         
         atc_data = atc_data[['time', 'person_id', 'x', 'y', 'velocity', 'motion_angle']]
         atc_data["x"] = atc_data["x"] / 1000
