@@ -38,15 +38,20 @@ if __name__ == "__main__":
         logger.error("datasets file - number of datasets and flags are not equal!")
         raise Exception("datasets file - number of datasets and flags are not equal!")
 
-    envs_arg = []
-    for i in range(len(dsets)):
-        dset = dsets[i]
-        flag = flags[i]
-        envs_arg.append((dset, flag))
-    args.envs = envs_arg
+    # envs_arg = []
+    # for i in range(len(dsets)):
+    #     dset = dsets[i]
+    #     flag = flags[i]
+    #     envs_arg.append((dset, flag))
+    # args.envs = envs_arg
+    
+    args.envs = [("atc", args.atc_file_num)]
 
     # data_file = "ucy_1"
-    data_file = "1024-1"
+    
+    print("Now in the atc file: ", args.atc_file_num)
+    data_file = f"1024-{args.atc_file_num}"
+    
     sim = Simulator(args, f"data/{data_file}.json", logger)
     
     print(f"In dataset{data_file}, there are {len(sim.case_id_list)} cases in total.")
@@ -56,7 +61,7 @@ if __name__ == "__main__":
     ### order the case_id_list
     sim.case_id_list.sort()
     for case_id in sim.case_id_list:
-        if case_id in [0,1,2,3]:
+        if args.atc_file_num == 1 and case_id <= 8:
             continue
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
