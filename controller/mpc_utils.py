@@ -4,28 +4,47 @@ import math
 import numpy as np
 
 
-### dynamics when (a, omega) are control inputs
-def dynamics_a_w(state, control, dt):
-    x, y, v, theta = state[0], state[1], state[2], state[3]
-    a, omega = control[0], control[1]
-    next_state = cs.vertcat(
-        x + v * cs.cos(theta) * dt,
-        y + v * cs.sin(theta) * dt,
-        v + a * dt,
-        theta + omega * dt
-    )
+
+
+def dynamics(use_a_omega, differential, state, control, dt):
+    if use_a_omega: ### dynamics when (a, omega) are control inputs
+        x, y, v, theta = state[0], state[1], state[2], state[3]
+        a, omega = control[0], control[1]
+    else: ### dynamics when (v, omega) are control inputs
+        x, y, theta = state[0], state[1], state[2]
+        v, omega = control[0], control[1]
+
+    if differential:
+        next_x = cs.if_else(
+            cs.fabs(omega) < 1e-6,  # Avoid division by zero
+            x + v * cs.cos(theta) * dt,  # Straight motion
+            x + (v / omega) * (cs.sin(theta + omega * dt) - cs.sin(theta))  # Circular motion
+        )
+        next_y = cs.if_else(
+            cs.fabs(omega) < 1e-6,
+            y + v * cs.sin(theta) * dt,  # Straight motion
+            y - (v / omega) * (cs.cos(theta + omega * dt) - cs.cos(theta))  # Circular motion
+        )
+    else:
+        next_x = x + v * cs.cos(theta) * dt
+        next_y = y + v * cs.sin(theta) * dt
+        
+    if use_a_omega: ### dynamics when (a, omega) are control inputs
+        next_state = cs.vertcat(
+            next_x,
+            next_y,
+            v + a * dt,
+            theta + omega * dt
+        )
+    else: ### dynamics when (v, omega) are control inputs
+        next_state = cs.vertcat(
+            next_x,
+            next_y,
+            theta + omega * dt
+        )
+        
     return next_state
 
-### dynamics when (v, omega) are control inputs
-def dynamics_v_w(state, control, dt):
-    x, y, theta = state[0], state[1], state[2]
-    v, omega = control[0], control[1]
-    next_state = cs.vertcat(
-        x + v * cs.cos(theta) * dt,
-        y + v * cs.sin(theta) * dt,
-        theta + omega * dt
-    )
-    return next_state
 
 def parse_config_file(config_path):
     config = configparser.ConfigParser()

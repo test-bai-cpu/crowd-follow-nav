@@ -22,7 +22,6 @@ pip install -r requirements.txt
 ```
 git clone https://github.com/sybrenstuvel/Python-RVO2.git
 cd Python-RVO2
-pip install -r requirements.txt
 pip install Cython
 python setup.py build
 python setup.py install

@@ -13,7 +13,7 @@ import pickle
 from controller import mpc_utils
 
 class CrowdAwareMPC:
-    def __init__(self, config, use_a_omega=False):
+    def __init__(self, config, use_a_omega=False, differential=False):
         if config is not None:
             self.configure(config)
         else:
@@ -21,6 +21,8 @@ class CrowdAwareMPC:
         
         self.kinematics = 'kinematic'
         self.use_a_omega = use_a_omega
+        self.differential = differential
+        
         # mpc solver attributes
         if self.use_a_omega:
             self.nx = 4  # State: [x, y, speed, motion_angle]
@@ -135,21 +137,17 @@ class CrowdAwareMPC:
         opti.minimize(cost)
         
         # Constraints
+        for t in range(self.mpc_horizon):
+            opti.subject_to(x_var[:, t + 1] == mpc_utils.dynamics(self.use_a_omega, self.differential, x_var[:, t], u_var[:, t], self.dt))
+        opti.subject_to(opti.bounded(-self.max_rot, u_var[1, :], self.max_rot))
+        
         if self.use_a_omega:
             print("------ use a omega ------")
-            # pass
-            for t in range(self.mpc_horizon):
-                opti.subject_to(x_var[:, t + 1] == mpc_utils.dynamics_a_w(x_var[:, t], u_var[:, t], self.dt))
             opti.subject_to(opti.bounded(-self.max_rev_speed, x_var[2, :], self.max_speed))
-            opti.subject_to(opti.bounded(-self.max_rot, u_var[1, :], self.max_rot))
             opti.subject_to(opti.bounded(-self.max_l_dcc, u_var[0, :], self.max_l_acc))
         else:
             print("------ use v omega ------")
-            # pass
-            for t in range(self.mpc_horizon):
-                opti.subject_to(x_var[:, t + 1] == mpc_utils.dynamics_v_w(x_var[:, t], u_var[:, t], self.dt))
             opti.subject_to(opti.bounded(-self.max_rev_speed, u_var[0, :], self.max_speed))
-            opti.subject_to(opti.bounded(-self.max_rot, u_var[1, :], self.max_rot))
         
         # Initial state constraint
         opti.subject_to(x_var[:, 0] == x_init)
