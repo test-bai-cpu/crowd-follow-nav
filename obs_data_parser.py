@@ -49,8 +49,11 @@ class ObsDataParser:
         else: ## padding to max_humans
             nearby_human_pos = np.full((self.max_humans, 2), 1e6)
             nearby_human_vel = np.full((self.max_humans, 2), 1e6)
-            nearby_human_pos[:num_humans] = obs["pedestrians_pos"]
-            nearby_human_vel[:num_humans] = obs["pedestrians_vel"]
+            if num_humans > 0:
+                pedestrians_pos = np.array(obs["pedestrians_pos"]).reshape(num_humans, 2)
+                pedestrians_vel = np.array(obs["pedestrians_vel"]).reshape(num_humans, 2)
+                nearby_human_pos[:num_humans] = obs["pedestrians_pos"]
+                nearby_human_vel[:num_humans] = obs["pedestrians_vel"]
         
         nearby_human_state = np.concatenate((nearby_human_pos, nearby_human_vel), axis=1)
         

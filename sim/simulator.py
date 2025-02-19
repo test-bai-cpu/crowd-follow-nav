@@ -370,15 +370,6 @@ class Simulator(object):
     def reset(self, case_id=None):
 
         self.case_id = case_id
-        
-        # clean the folder figs
-        if self.animate:
-            figs_dir = os.path.join(self.output_dir, 'figs')
-            if not os.path.exists(figs_dir):
-                os.makedirs(figs_dir)
-            else:
-                for f in os.listdir(figs_dir):
-                    os.remove(os.path.join(figs_dir, f))
 
         # reset the environment
         # if case_id is None, then select the next case from the list
@@ -393,6 +384,16 @@ class Simulator(object):
         # env is (env_name, env_flag)
         self.env_name = case['env']
         self.env_flag = case['env_flag']
+        
+        # clean the folder figs
+        if self.animate:
+            figs_dir = f"{self.output_dir}/figs/{self.env_name}_{self.env_flag}/case_{self.case_id}"
+            if not os.path.exists(figs_dir):
+                os.makedirs(figs_dir)
+            else:
+                for f in os.listdir(figs_dir):
+                    os.remove(os.path.join(figs_dir, f))
+        
         self.start_pos = case['start_pos']
         self.goal_pos = case['end_pos']
         # self.start_pos = [0,0]

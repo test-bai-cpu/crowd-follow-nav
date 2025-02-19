@@ -94,7 +94,7 @@ if __name__ == "__main__":
     sim.case_id_list.sort()
     print("All case ids are: ", sim.case_id_list)
     for case_id in sim.case_id_list:
-        if case_id != 0:
+        if case_id <= 42:
             continue
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
