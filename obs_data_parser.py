@@ -19,6 +19,7 @@ class ObsDataParser:
         self.max_humans = config.getint('mpc_env', 'max_humans')
         self.group_target_threshold = config.getfloat('mpc_env', 'group_target_threshold')
         self.group_robot_threshold = config.getfloat('mpc_env', 'group_robot_threshold')
+        self.group_vel_threshold = config.getfloat('mpc_env', 'group_vel_threshold')
 
     def get_robot_state(self, obs):
         robot_pos = obs['robot_pos']
@@ -102,8 +103,13 @@ class ObsDataParser:
             # exclude groups that are too far from the target
             if np.linalg.norm(obs["robot_pos"] - group_centroids[group_id]) > self.group_robot_threshold:
                 continue
+            # exclude groups that left behind and further way to the goal
             if np.linalg.norm(group_centroids[group_id] - target) - np.linalg.norm(obs["robot_pos"] - target) > self.group_target_threshold:
                 continue
+            # exclude static groups
+            if group_vel[0] < self.group_vel_threshold:
+                continue
+            
             valid_groups.append(group_id)
 
         if len(valid_groups) == 0:
