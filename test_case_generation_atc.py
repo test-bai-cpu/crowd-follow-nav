@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # region = [[0, -30], [40, 0]]
     region = [[-60, -40], [80, 20]]
 
-    start_end_pos = [[[40,-20], [0,0]]] # num_dset x n x 2 x 2
+    start_end_pos = [[[80,-40], [-60,-40]]] # num_dset x n x 2 x 2
     # start_end_pos = [[[40,-20], [-40,0]]] # num_dset x n x 2 x 2
 
     interval = int(interval_factor * fps)
