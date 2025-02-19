@@ -10,6 +10,8 @@ cd dataset-crowd-simulation
 
 - Set up a virtual environment
 ```
+python3 -m venv .myvenv
+source .myvenv/bin/activate
 python3 -m venv .
 ```
 
