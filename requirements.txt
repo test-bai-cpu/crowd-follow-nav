@@ -12,3 +12,4 @@ torchaudio
 pyyaml
 pandas
 casadi
+tensorboard

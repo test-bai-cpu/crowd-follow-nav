@@ -13,21 +13,21 @@ from obs_data_parser import ObsDataParser
 
 #### RL model
 import time
-import torch
-from torch.utils.tensorboard import SummaryWriter
+# import torch
+# from torch.utils.tensorboard import SummaryWriter
 # from rl.rl_agent import SAC
 # from rl.trainer import ContinuousSACTrainer
 # from rl.utils import load_config
 #### -----------------------------------
 
 
-#### RL model
-def preprocess_rl_obs(obs, device):
-    """ img_obs: A Numpy array with (max_human, 4) in float32.
-        Process it into torch tensor with (bs, max_humna*4) in float32.
-    """
-    return torch.FloatTensor(obs.reshape(1, -1)).to(device).type(torch.float)
-#### -----------------------------------
+# #### RL model
+# def preprocess_rl_obs(obs, device):
+#     """ img_obs: A Numpy array with (max_human, 4) in float32.
+#         Process it into torch tensor with (bs, max_humna*4) in float32.
+#     """
+#     return torch.FloatTensor(obs.reshape(1, -1)).to(device).type(torch.float)
+# #### -----------------------------------
 
 
 if __name__ == "__main__":
@@ -64,7 +64,8 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    data_file = "ucy_0"
+    # data_file = "ucy_1"
+    data_file = "ucy_2"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}.csv")
@@ -90,10 +91,11 @@ if __name__ == "__main__":
 
     # writer = SummaryWriter(f"{result_dir}/logs/{int(time.time())}")
     ########################################################################
-
+    sim.case_id_list.sort()
+    print("All case ids are: ", sim.case_id_list)
     for case_id in sim.case_id_list:
-        # if case_id != 19:
-        #     continue
+        if case_id != 0:
+            continue
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -103,8 +105,7 @@ if __name__ == "__main__":
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans
-            # TODO: padding and concate the nearby_human_pos and nearby_human_vel to max_humans -> nearby_human_state
+            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y            
             
             ############ RL model output the follow_pos ############
             # rl_trainer.global_step += 1
@@ -123,7 +124,8 @@ if __name__ == "__main__":
             # follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
             #########################################################
 
-            action_mpc, _ = mpc.get_action(current_state, target, nearby_human_pos, nearby_human_vel, follow_pos, follow_vel)
+            follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
+            action_mpc, _ = mpc.get_action(current_state, target, nearby_human_state, follow_state)
             print("--- action ---")
             print("use a_omega is: ", args.use_a_omega, ", and action_mpc: ", action_mpc)
             ## action a, omega to vx, vy
@@ -135,7 +137,7 @@ if __name__ == "__main__":
             # print("speed: ", robot_speed_new, "motion_angle: ", robot_motion_angle_new)
             # if time_step == 1593:
             #     print("Now checking the obs value")
-            obs, reward, done, info, time_step = sim.step(action_mpc, follow_pos, follow_vel)
+            obs, reward, done, info, time_step = sim.step(action_mpc, follow_state)
 
             print("time step: ", time_step)
 

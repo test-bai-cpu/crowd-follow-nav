@@ -516,13 +516,15 @@ class Simulator(object):
             
         return displacement
     
-    def step(self, action, follow_pos=None, follow_vel=None):
-        if follow_pos is not None and follow_vel is not None:
-            self.follow_pos = follow_pos[0, :] # x, y
-            self.follow_vel = follow_vel[0, :] # speed, motion_angle
+    def step(self, action, follow_state):
+        follow_pos = follow_state[0, :2]
+        follow_vel = follow_state[0, 2:]
+        if np.sum(follow_vel) < 1e6:
+            self.follow_pos = follow_pos # x, y
+            self.follow_vel = follow_vel # speed, motion_angle
         else:
             self.follow_pos = None
-            self.follow_vel = None            
+            self.follow_vel = None
         # action is the robot velocity
         # action is a 2D numpy array
         # action[0] is the x velocity, or linear velocity if differential drive
@@ -628,11 +630,11 @@ class Simulator(object):
             self.done = True
             self.fail_reason = "Time"
             self.logger.info("Time limit exceeded. Terminating episode.")
-        elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
-            success = False
-            self.done = True
-            self.fail_reason = "Collision"
-            self.logger.info("Collision detected. Terminating episode.")
+        # elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
+        #     success = False
+        #     self.done = True
+        #     self.fail_reason = "Collision"
+        #     self.logger.info("Collision detected. Terminating episode.")
         elif np.linalg.norm(self.robot_pos - self.goal_pos) < self.goal_radius:
             self.done = True
             self.logger.info("Goal reached.")
@@ -653,11 +655,11 @@ class Simulator(object):
             frame = self.render()
             self.image_sequences.append(frame)
             ########### save the image to the output directory ##############
-            # tmp_fig = plt.figure()
-            # tmp_ax = tmp_fig.add_subplot(111)
-            # self.render_for_save(tmp_ax)
-            # tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
-            # plt.close(tmp_fig)
+            tmp_fig = plt.figure()
+            tmp_ax = tmp_fig.add_subplot(111)
+            self.render_for_save(tmp_ax)
+            tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
+            plt.close(tmp_fig)
             #################################################################
             if self.done:
                 self._write_video()
@@ -737,9 +739,11 @@ class Simulator(object):
 
         curr_frame = []
         
-        img = plt.imread("localization_grid_white.jpg")
-        img_obj = plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=[-60, 80, -40, 20])
-        curr_frame.append(img_obj)
+        # img = plt.imread("localization_grid_white.jpg")
+        # img_obj = plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=[-60, 80, -40, 20])
+        # curr_frame.append(img_obj)
+        
+        curr_frame.append(plt.title("Time frame: {}".format(self.time)))
         
         curr_frame.append(plt.scatter(self.start_pos[0], self.start_pos[1], c='g', s=10))
         curr_frame.append(plt.scatter(self.robot_path[:, 0], self.robot_path[:, 1], c='y', s=10))
@@ -747,6 +751,7 @@ class Simulator(object):
         
         # for adding plot follow point, pos and vel in motion_angle, in quiver
         if self.follow_pos is not None and self.follow_vel is not None:
+            print(self.follow_pos.shape, self.follow_vel.shape)
             curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=10))
             u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
             curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))
@@ -803,6 +808,8 @@ class Simulator(object):
         curr_frame.append(ax.scatter(self.robot_path[:, 0], self.robot_path[:, 1], c='y', s=10))
         curr_frame.append(ax.scatter(self.goal_pos[0], self.goal_pos[1], c='m', s=10))
 
+        curr_frame.append(plt.title("Time frame: {}".format(self.time)))
+        
         # for adding plot follow point, pos and vel in motion_angle, in quiver
         if self.follow_pos is not None and self.follow_vel is not None:
             curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=10))
