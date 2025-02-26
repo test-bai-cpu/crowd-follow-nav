@@ -2,6 +2,10 @@ import numpy as np
 import rvo2
 import json
 import os
+from pathlib import Path
+
+from collections import defaultdict
+import pysocialforce as psf
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -503,6 +507,37 @@ class Simulator(object):
 
         return ped_pos_new, ped_vel_new
     
+    ### TODO: can be like: get which group the robot (should) belong to, and add this to group_labels as well in the grouped_indices variable
+    def sfm_step(self, old_robot_pos, old_robot_vx_vy, ped_pos, ped_vel, ped_goals, group_labels):
+        if len(ped_pos) == 0:  # Check if there are no pedestrians
+            ped_pos_new = np.empty((0, 2))  # Shape (0, 2)
+            ped_vel_new = np.empty((0, 2))  # Shape (0, 2)
+            return ped_pos_new, ped_vel_new
+    
+        ped_pos = np.array(ped_pos).reshape(-1, 2)  # Shape (num_pedestrians, 2) (px,py)
+        ped_vel = np.array(ped_vel).reshape(-1, 2)  # Shape (num_pedestrians, 2) (vx,vy)
+        ped_goals = np.array(ped_goals).reshape(-1, 2)  # Shape (num_pedestrians, 2) (gx,gy)
+        ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
+        robot_data = np.array([old_robot_pos[0], old_robot_pos[1], old_robot_vx_vy[0], old_robot_vx_vy[1], self.goal_pos[0], self.goal_pos[1]]).reshape(1, -1)
+
+        combined_data = np.vstack((ped_data, robot_data))
+        
+        group_dict = defaultdict(list)
+
+        for idx, label in enumerate(group_labels):
+            group_dict[label].append(idx)
+        grouped_indices = list(group_dict.values())
+        sfm_config_file = Path(__file__).resolve().parent.parent.joinpath("sfm_config.toml")
+        sim = psf.Simulator(combined_data, groups=grouped_indices, obstacles=None, config_file=sfm_config_file)
+        sim.step()
+        
+        ped_data_all_steps, _ = sim.get_states()
+        ped_data_new = ped_data_all_steps[1]
+        ped_pos_new = ped_data_new[:-1, :2]
+        ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
+
+        return ped_pos_new, ped_vel_new
+    
     def get_dynamics(self, v, w, th):
         if w == 0 or not self.differential: # get the robot's nice position by following a circular arc
             displacement = np.array([
@@ -540,6 +575,8 @@ class Simulator(object):
 
         # update robot position
         old_robot_pos = self.robot_pos
+        old_robot_vx_vy = (self.robot_vel[0] * np.cos(self.robot_th), self.robot_vel[0] * np.sin(self.robot_th))
+        
         if self.use_a_omega: # use a, w as the controller output action
             a, w = action[0], action[1]
             v, th = self.robot_vel[0], self.robot_th
@@ -568,8 +605,10 @@ class Simulator(object):
         else:
             if self.react:
                 # use ORCA to update pedestrian positions
-                tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
-                    old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
+                    # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)  
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward

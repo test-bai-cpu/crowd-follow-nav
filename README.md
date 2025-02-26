@@ -21,12 +21,20 @@ pip install -r requirements.txt
 ```
 
 - Set up [RVO2](https://github.com/sybrenstuvel/Python-RVO2). If there are any issues, please go to [RVO2](https://github.com/sybrenstuvel/Python-RVO2) for troubleshooting.
-```
+```bash
 git clone https://github.com/sybrenstuvel/Python-RVO2.git
 cd Python-RVO2
 pip install Cython
 python setup.py build
 python setup.py install
+cd ..
+```
+
+- Set up [SFMpy](https://github.com/yuxiang-gao/PySocialForce). 
+```bash
+git clone https://github.com/yuxiang-gao/PySocialForce.git
+cd PySocialForce
+pip install -e '.[test,plot]'
 cd ..
 ```
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # python3 main.py --group --record --react --animate
-python3 main.py --group --record --animate
+python3 main.py --group --record --animate --react
 
 # for atc_file_num in {1..20..1}
 # do
