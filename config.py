@@ -96,7 +96,7 @@ def get_args():
     parser.add_argument(
         "--react",
         action='store_true',
-        default=False,
+        default=True,
         help="if ORCA pedestrians is enabled"
     )
 

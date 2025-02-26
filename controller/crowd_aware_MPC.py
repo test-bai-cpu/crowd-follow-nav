@@ -150,7 +150,11 @@ class CrowdAwareMPC:
         
         # cost += self.w_safe * cost_safe + self.w_smooth * cost_smooth
         
+        
+        ##### TODO: it can happen that with the safety cost, the robot cannot move straightly to the goal, even goal is very
+        ##### close. Maybe it because there is person suddently comes from the edge?
         cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_safe + cost_smooth
+        # cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_smooth
         
         opti.minimize(cost)
         
@@ -205,6 +209,8 @@ class CrowdAwareMPC:
 
     def get_action(self, current_state, target, nearby_human_state, follow_state):
         """Solves the MPC optimization and returns the next control action."""
+        ## follow_state is in speed, motion_angle
+        ## nearby_human_state is in pos_x, pos_y, vel_x, vel_y, which padding to max_humans
         opti = self.opti
 
         # Set current state
