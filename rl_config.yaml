@@ -2,14 +2,14 @@
 max_follow_pos_delta: 10
 
 # Training - Steps
-num_samples_before_learning: 4096
+num_samples_before_learning: 1000 # 4096
 num_samples_before_evaluation: 0
 num_eval_episodes: 10
 
 # Training - Frequency
 train_policy_freq: 2
 target_network_update_freq: 1
-report_rollout_freq: 3200
+report_rollout_freq: 1000 # 3200
 report_loss_freq: 3200
 save_model_freq: 100000
 eval_freq: 5000000

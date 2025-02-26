@@ -103,14 +103,14 @@ def get_args():
     parser.add_argument(
         "--animate",
         action='store_true',
-        default=True,
+        default=False,
         help="if results will be saved into a video"
     )
 
     parser.add_argument(
         "--record",
         action='store_true',
-        default=True,
+        default=False,
         help="if all the trajectories will be recorded for evaluation"
     )
 
