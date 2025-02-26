@@ -8,8 +8,8 @@ from os import path
 # from gym import spaces
 from gymnasium import spaces
 
-from rl_agent import SAC
-from replay_buffer import ReplayBuffer
+from rl.rl_agent import SAC
+from rl.replay_buffer import ReplayBuffer
 
 
 def linear_schedule(n, init=0.2, max_n=100000):
@@ -50,7 +50,7 @@ class BaseTrainer(nn.Module):
         self.eipsode_lengths = np.zeros(self.num_envs, dtype=int)
         self.eipsode_lengths_eval = np.zeros(self.num_eval_envs, dtype=int)
 
-        self.buffer_init_beta = config["buffer_init_beta"]
+        # self.buffer_init_beta = config["buffer_init_beta"]
         # self.total_timesteps = config["total_timesteps"]//self.num_envs
         self.training_intensity = config["training_intensity"]
         self.num_eval_episodes = config["num_eval_episodes"]
@@ -63,15 +63,20 @@ class BaseTrainer(nn.Module):
         self.report_rollout_freq = config["report_rollout_freq"]//num_envs
         self.report_loss_freq = config["report_loss_freq"]//num_envs
 
+        self.reporter = {'total_reward': [],
+                         'total_return': [],
+                         'episode_length': [],
+                         'hist_complete': []}
+            
         self.hist_images = []
-        self.obs_shape = config["observation_shape"]
+        self.obs_shape = config["state_shape"]
 
         if config.get("autotune", False):
-            target_entropy = -torch.prod(
+            self.target_entropy = -torch.prod(
                 torch.tensor(config["action_shape"]).to(self.device)).item()
             log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
         else:
-            target_entropy = None
+            self.target_entropy = None
             entropy_alpha = config.get("entropy_alpha", 0.2)
             log_alpha = torch.tensor(np.log([entropy_alpha]), device=self.device)
 
@@ -101,7 +106,7 @@ class BaseTrainer(nn.Module):
         dummy_action_space = spaces.Box(
             low=-1, high=1, shape=config["action_shape"])
         dummy_observation_space = spaces.Box(
-            low=-1, high=1, shape=config["observation_shape"])
+            low=-1, high=1, shape=config["state_shape"])
 
         self.rb = ReplayBuffer(config["buffer_size"], dummy_observation_space,
                                dummy_action_space, self.device,
@@ -138,12 +143,19 @@ class BaseTrainer(nn.Module):
         self.eipsode_lengths[dones] = 0
 
     def report_progress(self, writer, train_info={}):
-        if self.is_report_rollout(self.global_step):
-            self.report_rollout_info(writer, self.n_transitions)
+        if self.is_report_rollout():
+            mean_return = np.mean(self.reporter["total_return"])
+            mean_reward = np.mean(self.reporter["total_reward"])
+            mean_length = np.mean(self.reporter["episode_length"])
+            print(f"RL >>> Step: {self.global_step} | Episodic Return: {mean_return:.3f} | Reward: {mean_reward:.3f} | Length: {mean_length}")
+            self.reporter["total_return"] = []
+            self.reporter["total_reward"] = []
+            self.reporter["episode_length"] = []
+            # self.report_rollout_info(writer, self.n_transitions)
 
         # Report loss info
-        if self.is_report_train(self.global_step):
-            self.report_train_info(writer, train_info)
+        # if self.is_report_train():
+        #     self.report_train_info(writer, train_info)
 
     ##################################################
     # Conditions
@@ -196,12 +208,12 @@ class ContinuousSACTrainer(BaseTrainer):
         self._is_obs_image = False
 
     def _preprocess(self, data):
-        obs = data.observations.to(self.device).permute(0, 3, 1, 2) / 255.
+        obs = data.observations.to(self.device)
         actions = data.actions.to(self.device)
-        next_obs = data.next_observations.to(self.device).permute(0, 3, 1, 2) / 255.
+        next_obs = data.next_observations.to(self.device)
         rewards = data.rewards.flatten()
         dones = data.dones.flatten()
-        weights = data.weights.view(-1)
+        weights = 1
         return (obs, actions, next_obs, rewards, dones, weights)
 
     def _gradient_descent(self, optimizer, loss, is_clip_grad=False):
@@ -213,7 +225,7 @@ class ContinuousSACTrainer(BaseTrainer):
         optimizer.step()
 
     def add_to_buffer(self, obs, next_obs, actions, rewards, dones, infos):
-        self.rb.add(self, obs, next_obs, actions, rewards, dones, infos)
+        self.rb.add(obs, next_obs, actions, rewards, dones, infos)
         self.n_transitions += obs.shape[0]
 
 
@@ -228,8 +240,8 @@ class ContinuousSACTrainer(BaseTrainer):
         for _ in range(self.training_intensity):
             data = self.rb.sample(self.batch_size)
             train_info = self.train_once(data)
-            self.rb.update_priorities(data.batch_inds, data.env_inds,
-                                 train_info["q_network"]["abs_td_error"].numpy())
+            # self.rb.update_priorities(data.batch_inds, data.env_inds,
+            #                      train_info["q_network"]["abs_td_error"].numpy())
 
         train_info = {**train_info,
                       "n_transitions": self.n_transitions}

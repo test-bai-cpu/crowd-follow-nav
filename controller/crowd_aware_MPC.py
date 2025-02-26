@@ -75,8 +75,6 @@ class CrowdAwareMPC:
         x_var = opti.variable(self.nx, self.mpc_horizon + 1) # [x, y, speed, motion_angle] / [x, y, motion_angle]
         u_var = opti.variable(self.nu, self.mpc_horizon) # [a, omega] / [speed, omega]
         
-        print("################## check x_var shape: ", x_var.shape, "self.nx: ",  self.nx)  
-        
         # Initial state and target
         x_init = opti.parameter(self.nx, 1)
         target = opti.parameter(2, 1)
@@ -153,8 +151,8 @@ class CrowdAwareMPC:
         
         ##### TODO: it can happen that with the safety cost, the robot cannot move straightly to the goal, even goal is very
         ##### close. Maybe it because there is person suddently comes from the edge?
-        cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_safe + cost_smooth
-        # cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_smooth
+        # cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_safe + cost_smooth
+        cost = cost_goal + cost_follow + cost_safe + cost_smooth
         
         opti.minimize(cost)
         
@@ -164,11 +162,11 @@ class CrowdAwareMPC:
         opti.subject_to(opti.bounded(-self.max_rot, u_var[1, :], self.max_rot))
         
         if self.use_a_omega:
-            print("------ use a omega ------")
+            # print("------ use a omega ------")
             opti.subject_to(opti.bounded(-self.max_rev_speed, x_var[2, :], self.max_speed))
             opti.subject_to(opti.bounded(-self.max_l_dcc, u_var[0, :], self.max_l_acc))
         else:
-            print("------ use v omega ------")
+            # print("------ use v omega ------")
             opti.subject_to(opti.bounded(-self.max_rev_speed, u_var[0, :], self.max_speed))
         
         # Initial state constraint
@@ -238,63 +236,75 @@ class CrowdAwareMPC:
         try:
             sol = opti.solve()
         except:
-            print("----------------------------------")
-            print("Solver failed. Debugging values:")
-            x_var = opti.debug.value(self.opti_dict["x_var"])
-            u_var = opti.debug.value(self.opti_dict["u_var"])
-            print("x_var (state trajectory):", x_var)
-            print("u_var (control inputs):", u_var)
+            # print("----------------------------------")
+            # print("Solver failed. Debugging values:")
+            # x_var = opti.debug.value(self.opti_dict["x_var"])
+            # u_var = opti.debug.value(self.opti_dict["u_var"])
+            # print("x_var (state trajectory):", x_var)
+            # print("u_var (control inputs):", u_var)
             
-            follow_vel = opti.debug.value(self.opti_dict["follow_vel"])
-            follow_pos = opti.debug.value(self.opti_dict["follow_pos"])
+            # follow_vel = opti.debug.value(self.opti_dict["follow_vel"])
+            # follow_pos = opti.debug.value(self.opti_dict["follow_pos"])
             
-            print("follow_vel: ", follow_vel)
-            print("follow_pos: ", follow_pos)
+            # print("follow_vel: ", follow_vel)
+            # print("follow_pos: ", follow_pos)
             
-            nearby_human_pos = opti.debug.value(self.opti_dict["nearby_human_pos"])
-            nearby_human_vel = opti.debug.value(self.opti_dict["nearby_human_vel"])
+            # nearby_human_pos = opti.debug.value(self.opti_dict["nearby_human_pos"])
+            # nearby_human_vel = opti.debug.value(self.opti_dict["nearby_human_vel"])
             
-            cost_safe = self.get_cost_safe(x_var, nearby_human_pos)
-            cost_smooth = self.get_cost_smooth(u_var)
-            cost_follow = self.get_cost_follow(x_var, u_var, follow_pos, follow_vel, if_follow)
-            cost_goal = self.get_cost_goal(x_var, target)
+            # cost_safe = self.get_cost_safe(x_var, nearby_human_pos)
+            # cost_smooth = self.get_cost_smooth(u_var)
+            # cost_follow = self.get_cost_follow(x_var, u_var, follow_pos, follow_vel, if_follow)
+            # cost_goal = self.get_cost_goal(x_var, target)
 
-            print("cost_safe: ", cost_safe)
-            print("cost_smooth: ", cost_smooth)
-            print("cost_follow: ", cost_follow)
-            print("cost_goal: ", cost_goal)
+            # print("cost_safe: ", cost_safe)
+            # print("cost_smooth: ", cost_smooth)
+            # print("cost_follow: ", cost_follow)
+            # print("cost_goal: ", cost_goal)
             
-            solver_stats = opti.stats()  # Get solver statistics
-            print("Solver return status:", solver_stats["return_status"])
-            print("Solver iterations:", solver_stats["iter_count"])
-            print("Solver objective value:", solver_stats["iter_stats"]["obj"])
-            print("----------------------------------")
+            # solver_stats = opti.stats()  # Get solver statistics
+            # print("Solver return status:", solver_stats["return_status"])
+            # print("Solver iterations:", solver_stats["iter_count"])
+            # print("Solver objective value:", solver_stats["iter_stats"]["obj"])
+            # print("----------------------------------")
 
-            raise  # Re-raise error after debugging
+            # raise  # Re-raise error after debugging
+            
+            ## set a random action
+            print("MPC Solver failed. Set a random action")
+            if self.use_a_omega:
+                a = 0
+                w = 0
+                u_opt = np.array([a, w])
+            else:
+                v = 0
+                w = 0
+                u_opt = np.array([v, w])
+            return u_opt, current_state
         
         ################ Extract costs after solving #########################
-        x_var = sol.value(self.opti_dict["x_var"])
-        u_var = sol.value(self.opti_dict["u_var"])
-        cost = sol.value(self.opti_dict["opti"].f)
-        follow_vel = sol.value(self.opti_dict["follow_vel"])
-        follow_pos = sol.value(self.opti_dict["follow_pos"])
-        if_follow = sol.value(self.opti_dict["if_follow"])
-        nearby_human_pos = sol.value(self.opti_dict["nearby_human_pos"])
-        nearby_human_vel = sol.value(self.opti_dict["nearby_human_vel"])
+        # x_var = sol.value(self.opti_dict["x_var"])
+        # u_var = sol.value(self.opti_dict["u_var"])
+        # cost = sol.value(self.opti_dict["opti"].f)
+        # follow_vel = sol.value(self.opti_dict["follow_vel"])
+        # follow_pos = sol.value(self.opti_dict["follow_pos"])
+        # if_follow = sol.value(self.opti_dict["if_follow"])
+        # nearby_human_pos = sol.value(self.opti_dict["nearby_human_pos"])
+        # nearby_human_vel = sol.value(self.opti_dict["nearby_human_vel"])
         
-        cost_safe = self.get_cost_safe(x_var, nearby_human_pos)
-        cost_smooth = self.get_cost_smooth(u_var)
-        cost_follow = self.get_cost_follow(x_var, u_var, follow_pos, follow_vel, if_follow)
-        cost_goal = self.get_cost_goal(x_var, target)
+        # cost_safe = self.get_cost_safe(x_var, nearby_human_pos)
+        # cost_smooth = self.get_cost_smooth(u_var)
+        # cost_follow = self.get_cost_follow(x_var, u_var, follow_pos, follow_vel, if_follow)
+        # cost_goal = self.get_cost_goal(x_var, target)
         
-        print("cost_safe: ", cost_safe)
-        print("cost_smooth: ", cost_smooth)
-        print("cost_follow: ", cost_follow)
-        print("cost_goal: ", cost_goal)
-        print("total cost: ", cost)
+        # print("cost_safe: ", cost_safe)
+        # print("cost_smooth: ", cost_smooth)
+        # print("cost_follow: ", cost_follow)
+        # print("cost_goal: ", cost_goal)
+        # print("total cost: ", cost)
         
-        print("follow weight: ", self.w_follow, " goal weight: ", self.w_goal)
-        print("if_follow: ", sol.value(if_follow))
+        # print("follow weight: ", self.w_follow, " goal weight: ", self.w_goal)
+        # print("if_follow: ", sol.value(if_follow))
         ######################################################################
         
         # Extract first control action
@@ -328,9 +338,6 @@ class CrowdAwareMPC:
 
             # Compute safety cost (only when close to humans)
             cost_safe += cs.fmax(0, (self.d_safe - min_distance)**2) * self.w_safe
-            
-            print("distances", distances)
-            print("min_distance: ", min_distance)
             
         return cost_safe
     

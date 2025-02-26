@@ -37,7 +37,7 @@ class SAC(nn.Module):
             param.requires_grad = False
 
     def random_actions(self, num=1):
-        actions = np.random.rand(num, self.action_dim)
+        actions = 2 * np.random.rand(num, self.action_dim) - 1
         return actions
 
     def get_action(self, x, with_exploration=True):
@@ -82,7 +82,7 @@ class ContinuousSoftQNetwork(nn.Module):
         return v
 
 
-class ContinuousActor(nn.ContinuousSoftQNetwork):
+class ContinuousActor(nn.Module):
     def __init__(self, state_dim, action_shape, latent_dim=64, action_range=[-1, 1]):
         super().__init__()
         self.LOG_STD_MAX = 2

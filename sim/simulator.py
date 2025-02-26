@@ -553,6 +553,8 @@ class Simulator(object):
         return displacement
     
     def step(self, action, follow_state):
+        reward = 0
+        
         follow_pos = follow_state[0, :2]
         follow_vel = follow_state[0, 2:]
         if np.sum(follow_vel) < 1e6:
@@ -676,8 +678,9 @@ class Simulator(object):
         #     self.fail_reason = "Collision"
         #     self.logger.info("Collision detected. Terminating episode.")
         elif np.linalg.norm(self.robot_pos - self.goal_pos) < self.goal_radius:
+            reward += 1
             self.done = True
-            self.logger.info("Goal reached.")
+            self.logger.info("----------------Goal reached----------------")
 
         if self.laser:
             self._simulate_laser()
@@ -704,11 +707,55 @@ class Simulator(object):
             if self.done:
                 self._write_video()
 
-        # compute the reward
+        # TODO: compute the reward
+        group_matching_score = self.get_group_score(observation_dict)
+        reward += (group_matching_score * 0.5)
         
-
         # return the observation, reward(not used), done, and info
-        return observation_dict, 0, self.done, success, self.time
+        return observation_dict, reward, self.done, success, self.time
+    
+    def get_group_score(self, obs):
+        group_data = defaultdict(list)
+
+        for i, label in enumerate(obs["group_labels"]):
+            group_data[label].append((obs["pedestrians_pos"][i], obs["pedestrians_vel"][i]))
+
+        group_scores = {}
+
+        if len(group_data) == 0:
+            return 0
+        
+        for label, members in group_data.items():
+            
+            positions = np.array([m[0] for m in members])
+
+            distances = np.linalg.norm(positions - self.robot_pos, axis=1)
+            distance_to_group = np.min(distances)
+
+            if distance_to_group > 1.5:
+                group_scores[label] = 0
+                continue
+            
+            velocities = np.array([m[1] for m in members])
+            speed = np.linalg.norm(velocities, axis=1)
+            motion_angle = np.mod(np.arctan2(velocities[:, 1], velocities[:, 0]), 2 * np.pi)
+            avg_speed = np.mean(speed)
+            avg_motion_angle = mpc_utils.circmean(motion_angle, np.ones(len(motion_angle)))
+            
+            angle_diff = mpc_utils.circdiff(avg_motion_angle, self.robot_vel[1])
+            speed_diff = np.abs(avg_speed - self.robot_vel[0])
+            
+            sigma_speed = 0.5
+            sigma_angle = 15 / 180 * np.pi
+            
+            speed_score = np.exp(- (speed_diff / sigma_speed) ** 2)
+            angle_score = np.exp(- (angle_diff / sigma_angle) ** 2)
+            group_scores[label] = speed_score * angle_score
+
+        max_group_score = max(group_scores.values())
+        
+        return max_group_score
+        
     
     def evaluate(self, output=False):
         # evaluate the results of the simulation trial
@@ -791,7 +838,6 @@ class Simulator(object):
         
         # for adding plot follow point, pos and vel in motion_angle, in quiver
         if self.follow_pos is not None and self.follow_vel is not None:
-            print(self.follow_pos.shape, self.follow_vel.shape)
             curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=10))
             u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
             curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))

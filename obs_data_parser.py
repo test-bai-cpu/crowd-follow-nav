@@ -45,16 +45,16 @@ class ObsDataParser:
             # get the closest max_humans state to the robot
             distances_to_humans = np.linalg.norm(obs["pedestrians_pos"] - obs["robot_pos"], axis=1)
             sorted_indices = np.argsort(distances_to_humans)
-            nearby_human_pos = obs["pedestrians_pos"][sorted_indices[:self.max_humans]]
-            nearby_human_vel = obs["pedestrians_vel"][sorted_indices[:self.max_humans]]
+            nearby_human_pos = obs["pedestrians_pos"][sorted_indices[:self.max_humans]].copy()
+            nearby_human_vel = obs["pedestrians_vel"][sorted_indices[:self.max_humans]].copy()
         else: ## padding to max_humans
             nearby_human_pos = np.full((self.max_humans, 2), 1e6)
             nearby_human_vel = np.full((self.max_humans, 2), 1e6)
             if num_humans > 0:
                 pedestrians_pos = np.array(obs["pedestrians_pos"]).reshape(num_humans, 2)
                 pedestrians_vel = np.array(obs["pedestrians_vel"]).reshape(num_humans, 2)
-                nearby_human_pos[:num_humans] = obs["pedestrians_pos"]
-                nearby_human_vel[:num_humans] = obs["pedestrians_vel"]
+                nearby_human_pos[:num_humans] = obs["pedestrians_pos"].copy()
+                nearby_human_vel[:num_humans] = obs["pedestrians_vel"].copy()
         
         nearby_human_state = np.concatenate((nearby_human_pos, nearby_human_vel), axis=1)
         
@@ -118,7 +118,7 @@ class ObsDataParser:
             nearest_group = min(valid_groups, key=lambda x: np.linalg.norm(group_centroids[x] - obs["robot_pos"]))
             follow_pos = group_centroids[nearest_group]
             follow_vel = group_vels[nearest_group]
-            print("First follow pos and vel are: ", follow_pos, follow_vel)
+            # print("First follow pos and vel are: ", follow_pos, follow_vel)
 
         follow_state = np.concatenate((follow_pos, follow_vel), axis=0).reshape(1, 4)
         
@@ -167,7 +167,7 @@ class ObsDataParser:
             nearest_group = min(similar_direction_groups, key=lambda x: np.linalg.norm(group_centroids[x] - obs["robot_pos"]))
             follow_pos = group_centroids[nearest_group]
             follow_vel = group_vels[nearest_group]
-            print("First follow pos and vel are: ", follow_pos, follow_vel)
+            # print("First follow pos and vel are: ", follow_pos, follow_vel)
 
             #### make follow pos and vel in prediction horizon
             speed = follow_vel[0]

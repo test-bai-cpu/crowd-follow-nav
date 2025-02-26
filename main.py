@@ -22,12 +22,22 @@ from rl.utils import load_config
 
 
 #### RL model
-def preprocess_rl_obs(obs, device):
+def preprocess_rl_obs(obs, current_state, device=None):
     """ img_obs: A Numpy array with (max_human, 4) in float32.
         Process it into torch tensor with (bs, max_humna*4) in float32.
     """
+    obs = obs.copy()
+    current_pos = current_state[:2].reshape(1, -1)
+    obs[:,:2] = obs[:,:2] - current_pos
+    obs[obs > 1e4] = 0
+    
+    if device is None:
+        return obs.reshape(1, -1)
+    
     return torch.FloatTensor(obs.reshape(1, -1)).to(device).type(torch.float)
+
 #### -----------------------------------
+
 
 
 if __name__ == "__main__":
@@ -81,7 +91,7 @@ if __name__ == "__main__":
     
     ######################### RL model #####################################
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    rl_config = load_config("configs/rl_config.yaml")
+    rl_config = load_config("rl_config.yaml")
     result_dir = rl_config["result_dir"]
     rl_agent = SAC(rl_config["state_shape"], rl_config["action_shape"],
                    rl_config["latent_dim"], device)
@@ -105,15 +115,17 @@ if __name__ == "__main__":
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y            
+            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y            
             
             ############ RL model output the follow_pos ############
             rl_trainer.global_step += 1
             if rl_trainer.is_learning_starts():
-                rl_obs = preprocess_rl_obs(nearby_human_state)
+                rl_obs = preprocess_rl_obs(nearby_human_state, current_state, device)
                 rl_actions, _, entropies = rl_agent.get_action(rl_obs)
                 rl_actions = rl_actions.cpu().detach().numpy()
+                rl_obs = rl_obs.cpu().detach().numpy()
             else:
+                rl_obs = preprocess_rl_obs(nearby_human_state, current_state)
                 rl_actions = rl_agent.random_actions()
 
             # Rescale actions. rl_actions is (1, 4): pos_x, pos_y, vel_x, vel_y
@@ -121,14 +133,21 @@ if __name__ == "__main__":
             follow_vel = rl_actions[0, 2:]
 
             follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) / 2 - max_follow_pos_delta     # Since max_follow_pos_delta > 0
+            # revert the relative pos to global pos
+            follow_pos = follow_pos + current_state[:2]
             follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
-            follow_state = np.concatenate([follow_pos, follow_vel])
+
+            follow_speed = np.linalg.norm(follow_vel)
+            follow_motion_angle = np.mod(np.arctan2(follow_vel[1], follow_vel[0]), 2 * np.pi)
+
+            follow_state = np.array([follow_pos[0], follow_pos[1], follow_speed, follow_motion_angle])
+            follow_state = follow_state.reshape(1, -1)
             #########################################################
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
             action_mpc, _ = mpc.get_action(current_state, target, nearby_human_state, follow_state)
-            print("--- action ---")
-            print("use a_omega is: ", args.use_a_omega, ", and action_mpc: ", action_mpc)
+            # print("--- action ---")
+            # print("use a_omega is: ", args.use_a_omega, ", and action_mpc: ", action_mpc)
             ## action a, omega to vx, vy
             ## obs_robot_vel is vx, vy, now I have action a, omega, I want to compute the new robot_vel in vx, vy
             # robot_speed_new = robot_speed + action_mpc[0] * args.dt
@@ -140,22 +159,20 @@ if __name__ == "__main__":
             #     print("Now checking the obs value")
             obs, reward, done, info, time_step = sim.step(action_mpc, follow_state)
 
-            print("time step: ", time_step)
+            # print("time step: ", time_step)
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y                     
-
-            next_nearby_human_state = None
+            next_nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y                     
             
-            # next_rl_obs = preprocess_rl_obs(next_nearby_human_state)
-            next_rl_obs = next_nearby_human_state.reshape(1, -1)
-            rl_reward = np.array([[reward]])
-            rl_done = np.array([[done]])
+            next_rl_obs = preprocess_rl_obs(next_nearby_human_state, current_state)
+
+            rl_reward = np.array([reward])
+            rl_done = np.array([done])
             rl_trainer.add_to_buffer(rl_obs, next_rl_obs, rl_actions, rl_reward, rl_done, [{}])
             rl_trainer.update_episode_info(rl_reward)
 
-            if done.any():
+            if rl_done.any():
                 infos = {}
                 rl_trainer.record_episode_info(rl_done, infos)
 

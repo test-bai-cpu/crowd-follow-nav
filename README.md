@@ -52,3 +52,9 @@ mkdir data
 - Copy `check_regions` and `start_end_pos` to `test_case_generation.py`.
 - Use `test_case_generation.py` to generate test cases.
 - Initialize the simulator using the generated test files. See `main.py` for an example.
+
+
+
+## for RL
+pip install tensorboard
+pip install gymnasium
