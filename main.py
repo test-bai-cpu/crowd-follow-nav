@@ -30,10 +30,10 @@ def preprocess_rl_obs(obs, current_state, device=None):
     current_pos = current_state[:2].reshape(1, -1)
     obs[:,:2] = obs[:,:2] - current_pos
     obs[obs > 1e4] = 0
-    
+
     if device is None:
         return obs.reshape(1, -1)
-    
+
     return torch.FloatTensor(obs.reshape(1, -1)).to(device).type(torch.float)
 
 #### -----------------------------------
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         writer = csv.writer(file)
         writer.writerow(headers)  # Write the header row
     #################################################################
-    
+
     ######################### RL model #####################################
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     rl_config = load_config("rl_config.yaml")
@@ -115,8 +115,8 @@ if __name__ == "__main__":
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y            
-            
+            nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
+
             ############ RL model output the follow_pos ############
             rl_trainer.global_step += 1
             if rl_trainer.is_learning_starts():
@@ -163,8 +163,8 @@ if __name__ == "__main__":
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            next_nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y                     
-            
+            next_nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
+
             next_rl_obs = preprocess_rl_obs(next_nearby_human_state, current_state)
 
             rl_reward = np.array([reward])
@@ -173,8 +173,8 @@ if __name__ == "__main__":
             rl_trainer.update_episode_info(rl_reward)
 
             if rl_done.any():
-                infos = {}
-                rl_trainer.record_episode_info(rl_done, infos)
+                rl_infos = {"is_success": np.array([info])}   # info is a boolean value representing whether the robot reaches the target
+                rl_trainer.record_episode_info(rl_done, rl_infos)
 
             if rl_trainer.is_train_model():
                 train_info = rl_trainer.train_model()
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             rl_trainer.report_progress(writer, train_info)
             rl_trainer.save_model()
             #################################################################################
-            
+
 
         ############## save the evaluation results to the csv file ##############
         result_dict = sim.evaluate(output=True)
