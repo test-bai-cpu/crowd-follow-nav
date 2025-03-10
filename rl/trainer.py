@@ -10,6 +10,7 @@ from gymnasium import spaces
 
 from rl.rl_agent import SAC
 from rl.replay_buffer import ReplayBuffer
+from rl.utils import Reporter
 
 
 def linear_schedule(n, init=0.2, max_n=100000):
@@ -63,11 +64,12 @@ class BaseTrainer(nn.Module):
         self.report_rollout_freq = config["report_rollout_freq"]//num_envs
         self.report_loss_freq = config["report_loss_freq"]//num_envs
 
-        self.reporter = {'total_reward': [],
-                         'total_return': [],
-                         'episode_length': [],
-                         'hist_complete': []}
-            
+        self.reporter = Reporter()
+        # self.reporter = {'total_reward': [],
+        #                  'total_return': [],
+        #                  'episode_length': [],
+        #                  'hist_complete': []}
+
         self.hist_images = []
         self.obs_shape = config["state_shape"]
 
@@ -144,18 +146,18 @@ class BaseTrainer(nn.Module):
 
     def report_progress(self, writer, train_info={}):
         if self.is_report_rollout():
-            mean_return = np.mean(self.reporter["total_return"])
-            mean_reward = np.mean(self.reporter["total_reward"])
-            mean_length = np.mean(self.reporter["episode_length"])
-            print(f"RL >>> Step: {self.global_step} | Episodic Return: {mean_return:.3f} | Reward: {mean_reward:.3f} | Length: {mean_length}")
-            self.reporter["total_return"] = []
-            self.reporter["total_reward"] = []
-            self.reporter["episode_length"] = []
-            # self.report_rollout_info(writer, self.n_transitions)
+            # mean_return = np.mean(self.reporter["total_return"])
+            # mean_reward = np.mean(self.reporter["total_reward"])
+            # mean_length = np.mean(self.reporter["episode_length"])
+            # print(f"RL >>> Step: {self.global_step} | Episodic Return: {mean_return:.3f} | Reward: {mean_reward:.3f} | Length: {mean_length}")
+            # self.reporter["total_return"] = []
+            # self.reporter["total_reward"] = []
+            # self.reporter["episode_length"] = []
+            self.reporter.report_rollout_info(writer, self.n_transitions)
 
         # Report loss info
-        # if self.is_report_train():
-        #     self.report_train_info(writer, train_info)
+        if self.is_report_train():
+            self.reporter.report_train_info(writer, train_info)
 
     ##################################################
     # Conditions
