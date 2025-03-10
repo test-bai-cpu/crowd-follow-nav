@@ -152,7 +152,8 @@ class CrowdAwareMPC:
         ##### TODO: it can happen that with the safety cost, the robot cannot move straightly to the goal, even goal is very
         ##### close. Maybe it because there is person suddently comes from the edge?
         # cost = cost_goal * (1-if_follow) + cost_follow * if_follow + cost_safe + cost_smooth
-        cost = cost_goal + cost_follow + cost_safe + cost_smooth
+        # cost = cost_goal + cost_follow + cost_safe + cost_smooth
+        cost = cost_follow + cost_safe + cost_smooth
         
         opti.minimize(cost)
         

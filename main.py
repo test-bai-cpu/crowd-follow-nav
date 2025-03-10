@@ -27,6 +27,7 @@ def preprocess_rl_obs(obs, current_state, device=None):
         Process it into torch tensor with (bs, max_humna*4) in float32.
     """
     obs = obs.copy()
+    current_state = current_state.copy()
     current_pos = current_state[:2].reshape(1, -1)
     obs[:,:2] = obs[:,:2] - current_pos
     obs[obs > 1e4] = 0

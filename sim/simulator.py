@@ -698,18 +698,22 @@ class Simulator(object):
             frame = self.render()
             self.image_sequences.append(frame)
             ########### save the image to the output directory ##############
-            tmp_fig = plt.figure()
-            tmp_ax = tmp_fig.add_subplot(111)
-            self.render_for_save(tmp_ax)
-            tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
-            plt.close(tmp_fig)
+            # tmp_fig = plt.figure()
+            # tmp_ax = tmp_fig.add_subplot(111)
+            # self.render_for_save(tmp_ax)
+            # tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
+            # plt.close(tmp_fig)
             #################################################################
             if self.done:
                 self._write_video()
 
-        # TODO: compute the reward
+        # compute the reward
+        ## reward for reaching the goal
         group_matching_score = self.get_group_score(observation_dict)
         reward += (group_matching_score * 0.5)
+        ## reward to getting closer to the goal
+        reward += 0.5 * (np.linalg.norm(old_robot_pos - self.goal_pos) - np.linalg.norm(self.robot_pos - self.goal_pos))
+        
         
         # return the observation, reward(not used), done, and info
         return observation_dict, reward, self.done, success, self.time
@@ -789,15 +793,15 @@ class Simulator(object):
             self.logger.info("Success: {}".format(result_dict['success']))
             if not result_dict['success']:
                 self.logger.info("Fail reason: {}".format(result_dict['fail_reason']))
-            self.logger.info("Navigation time: {:.2f} s".format(result_dict['navigation_time']))
-            self.logger.info("Path length: {:.2f} m".format(result_dict['path_length']))
-            self.logger.info("Path smoothness: {:.2f}".format(result_dict['path_smoothness']))
-            self.logger.info("Motion smoothness: {:.2f}".format(result_dict['motion_smoothness']))
-            self.logger.info("Min pedestrian distance: {:.2f} m".format(result_dict['min_ped_dist']))
-            self.logger.info("Average pedestrian distance: {:.2f} m".format(result_dict['avg_ped_dist']))
-            if self.laser:
-                self.logger.info("Min laser distance: {:.2f} m".format(result_dict['min_laser_dist']))
-                self.logger.info("Average laser distance: {:.2f} m".format(result_dict['avg_laser_dist']))
+            # self.logger.info("Navigation time: {:.2f} s".format(result_dict['navigation_time']))
+            # self.logger.info("Path length: {:.2f} m".format(result_dict['path_length']))
+            # self.logger.info("Path smoothness: {:.2f}".format(result_dict['path_smoothness']))
+            # self.logger.info("Motion smoothness: {:.2f}".format(result_dict['motion_smoothness']))
+            # self.logger.info("Min pedestrian distance: {:.2f} m".format(result_dict['min_ped_dist']))
+            # self.logger.info("Average pedestrian distance: {:.2f} m".format(result_dict['avg_ped_dist']))
+            # if self.laser:
+            #     self.logger.info("Min laser distance: {:.2f} m".format(result_dict['min_laser_dist']))
+            #     self.logger.info("Average laser distance: {:.2f} m".format(result_dict['avg_laser_dist']))
         
         return result_dict
 
