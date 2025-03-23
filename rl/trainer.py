@@ -26,7 +26,8 @@ class BaseTrainer(nn.Module):
         self,
         agent: SAC,
         result_dir,
-        config
+        config,
+        num_envs=1
     ):
         super().__init__()
         self.agent = agent
@@ -43,7 +44,6 @@ class BaseTrainer(nn.Module):
         self.n_transitions = 0
         self.global_step = 0
 
-        num_envs = 1
         self.num_envs = num_envs
         self.num_eval_envs = 1
         self.eipsode_rewards = np.zeros(self.num_envs)
@@ -64,7 +64,11 @@ class BaseTrainer(nn.Module):
         self.report_rollout_freq = config["report_rollout_freq"]//num_envs
         self.report_loss_freq = config["report_loss_freq"]//num_envs
 
-        self.reporter = Reporter()
+        self.reporter = Reporter(
+            reach_goal_reward=[],
+            reach_goal_reward_dense=[],
+            group_matching_reward=[]
+        )
         # self.reporter = {'total_reward': [],
         #                  'total_return': [],
         #                  'episode_length': [],
@@ -146,16 +150,8 @@ class BaseTrainer(nn.Module):
 
     def report_progress(self, writer, train_info={}):
         if self.is_report_rollout():
-            # mean_return = np.mean(self.reporter["total_return"])
-            # mean_reward = np.mean(self.reporter["total_reward"])
-            # mean_length = np.mean(self.reporter["episode_length"])
-            # print(f"RL >>> Step: {self.global_step} | Episodic Return: {mean_return:.3f} | Reward: {mean_reward:.3f} | Length: {mean_length}")
-            # self.reporter["total_return"] = []
-            # self.reporter["total_reward"] = []
-            # self.reporter["episode_length"] = []
             self.reporter.report_rollout_info(writer, self.n_transitions)
 
-        # Report loss info
         if self.is_report_train():
             self.reporter.report_train_info(writer, train_info)
 
@@ -196,18 +192,20 @@ class BaseTrainer(nn.Module):
         return False
 
 
-
 class ContinuousSACTrainer(BaseTrainer):
     def __init__(
         self,
         agent: SAC,
         result_dir,
-        config
+        config,
+        num_envs=1
     ):
-        super().__init__(agent, result_dir, config)
+        super().__init__(agent, result_dir, config, num_envs)
 
         self.max_grad_norm = 0.5
         self._is_obs_image = False
+        self.q_train_info = {}
+        self.actor_train_info = {}
 
     def _preprocess(self, data):
         obs = data.observations.to(self.device)
@@ -229,7 +227,6 @@ class ContinuousSACTrainer(BaseTrainer):
     def add_to_buffer(self, obs, next_obs, actions, rewards, dones, infos):
         self.rb.add(obs, next_obs, actions, rewards, dones, infos)
         self.n_transitions += obs.shape[0]
-
 
     ##################################################
     # Training
@@ -259,21 +256,20 @@ class ContinuousSACTrainer(BaseTrainer):
             self._preprocess(data)
 
         # Update Q networks
-        q_train_info = self._update_q_networks(
+        self.q_train_info = self._update_q_networks(
             obs, actions, next_obs, rewards, dones, weights)
 
         # Update actor network
-        actor_train_info = {}
         if self.train_steps % self.train_policy_freq == 0:
-            actor_train_info = self._update_actor_network(obs, weights)
+            self.actor_train_info = self._update_actor_network(obs, weights)
 
         # Update the target networks
         if self.train_steps % self.target_network_update_freq == 0:
             self._update_target_newtorks(self.tau)
 
         return {"reward": rewards.mean().item(),
-                "q_network": q_train_info,
-                "actor": actor_train_info}
+                "q_network": self.q_train_info,
+                "actor": self.actor_train_info}
 
     def save_model(self):
         if not self.is_save_model():
