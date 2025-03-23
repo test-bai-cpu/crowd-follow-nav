@@ -8,8 +8,8 @@ def get_args():
 
     # save directory
     parser.add_argument(
-        "--output-dir", 
-        type=str, 
+        "--output-dir",
+        type=str,
         default="exps/results",
         help="Path to save experiment results"
     )
@@ -96,7 +96,7 @@ def get_args():
     parser.add_argument(
         "--react",
         action='store_true',
-        default=False,
+        default=True,
         help="if ORCA pedestrians is enabled"
     )
 
@@ -199,14 +199,40 @@ def get_args():
         action='store_true',
         default=False,
         help='set to true if use a and omega as control inputs, otherwise use speed and omega')
-    
+
     parser.add_argument(
         '--atc-file-num',
         type=int,
         default=0,
         help='the number of the atc file to use')
-    
-        
+
+    parser.add_argument(
+        "--rl_model_weight",
+        type=str,
+        default="",
+        help="Load the RL model weight if given"
+    )
+
+    parser.add_argument(
+        "--exp_name",
+        type=str,
+        default="test1",
+        help="Experiment name"
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed"
+    )
+    parser.add_argument(
+        "--num_envs",
+        type=int,
+        default=2,
+        help="Number of parallel environments"
+    )
+
     try:
         args = parser.parse_args()
     except:
@@ -225,7 +251,7 @@ def check_args(args, logger):
         logger.info("GPU disabled")
 
     if args.pred:
-        
+
         if args.group:
             if (not args.pred_method in ["group", "sgan", "linear", "edge"]):
                 logger.error("Invalid prediction method name")
@@ -234,19 +260,19 @@ def check_args(args, logger):
             if (not args.pred_method in ["sgan", "linear"]):
                 logger.error("Invalid prediction method name")
                 raise Exception("Invalid prediction method name")
-            
+
         if (not args.pred_method == "linear") and (not args.history):
             logger.error("Trajectory prediction requires history")
             raise Exception("Trajectory prediction requires history")
-        
+
         if (args.pred_method == "edge") and (not args.edge):
             logger.error("Edge prediction requires edge grouping")
             raise Exception("Edge prediction requires edge grouping")
-        
+
         if (args.pred_method == "group") and (not args.group):
             logger.error("Group prediction requires grouping")
             raise Exception("Group prediction requires grouping")
-        
+
         if (args.pred_method == "sgan") and (args.lidar):
             logger.error("SGAN prediction does not support simulated lidar")
             raise Exception("SGAN prediction does not support simulated lidar")
