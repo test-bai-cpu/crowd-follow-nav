@@ -3,8 +3,8 @@ import csv
 import logging
 import yaml
 import numpy as np
-import random
 import time
+import random
 
 from config import get_args, check_args
 from sim.simulator import Simulator
@@ -27,6 +27,7 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
     """ img_obs: A Numpy array with (max_human, 4) in float32.
         Process it into torch tensor with (bs, max_humna*4) in float32.
     """
+    # TODO: pos and vel should both based on the robot frame
     obs = obs.copy()
     current_state = current_state.copy()
     current_pos = current_state[:2].reshape(1, -1)
@@ -43,7 +44,6 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
     return obs
 
 #### -----------------------------------
-
 
 def set_random_seed(seed):
     seed = seed if seed >= 0 else random.randint(0, 2**32)
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     data_file = "all"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
-    eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
+    eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}.csv")
     headers = [
         "case_id", "start_frame", "success", "fail_reason", "navigation_time", "path_length",
         "path_smoothness", "motion_smoothness", "min_ped_dist", "avg_ped_dist",
@@ -111,17 +111,21 @@ if __name__ == "__main__":
     ######################### RL model #####################################
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     rl_config = load_config("rl_config.yaml")
+    # result_dir = rl_config["result_dir"]
     result_dir = os.path.join(rl_config["result_dir"], args.exp_name)
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir, exist_ok=True)
     rl_agent = SAC(rl_config["state_shape"], rl_config["action_shape"],
                    rl_config["latent_dim"], device)
-    rl_trainer = ContinuousSACTrainer(rl_agent, result_dir, rl_config)
+    with_exploration = False
+    if len(args.rl_model_weight) > 0:
+        path_to_checkpoint = os.path.join(result_dir, args.rl_model_weight)
+        logger.info(f"Load the pretrained model from: {path_to_checkpoint}")
+        rl_agent.load_pretrained_agent(path_to_checkpoint)
+        with_exploration = False
+
     train_info = {}
     # max_follow_pos_delta = rl_config["max_follow_pos_delta"]
 
-    tb_writer = SummaryWriter(f"{rl_config['result_dir']}/logs/{args.exp_name}/{int(time.time())}")
-    logger.info(f"RL result directory: {result_dir}")
+    # tb_writer = SummaryWriter(f"{result_dir}/logs/{int(time.time())}")
     ########################################################################
     # sim.case_id_list.sort()
     np.random.shuffle(sim.case_id_list)
@@ -134,7 +138,8 @@ if __name__ == "__main__":
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
 
-    for case_id in sim.case_id_list:
+    # for case_id in sim.case_id_list[:1]:
+    for case_id in [2835]:
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -147,14 +152,12 @@ if __name__ == "__main__":
             nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
 
             ############ RL model output the follow_pos ############
-            rl_trainer.global_step += 1
             rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
-            if rl_trainer.is_learning_starts():
-                rl_actions, _, entropies = rl_agent.get_action(torch.FloatTensor(rl_obs).to(device))
-                rl_actions = rl_actions.cpu().detach().numpy()
+            if with_exploration:
+                rl_actions, _, entropies = rl_agent.get_action(torch.FloatTensor(rl_obs).to(device), with_exploration=with_exploration)
             else:
-                # rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
-                rl_actions = rl_agent.random_actions()
+                rl_actions = rl_agent.get_action(torch.FloatTensor(rl_obs).to(device), with_exploration=with_exploration)
+            rl_actions = rl_actions.cpu().detach().numpy()
 
             # Rescale actions. rl_actions is (1, 4): pos_x, pos_y, vel_x, vel_y, and they are all relative values to the robot, both pos and vel
             follow_pos = rl_actions[0, :2].copy()
@@ -165,8 +168,14 @@ if __name__ == "__main__":
             # revert the relative pos to global pos
             follow_pos = follow_pos + current_state[:2]
 
+            # TODO: TEST: Remove this. I fix the position to test MPC
+            follow_pos = target
+            
+
             follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
             follow_vel = follow_vel + np.array([robot_vx, robot_vy])
+            
+            follow_vel = np.array([0, 0.5])
 
             follow_speed = np.linalg.norm(follow_vel)
             follow_motion_angle = np.mod(np.arctan2(follow_vel[1], follow_vel[0]), 2 * np.pi)
@@ -190,6 +199,7 @@ if __name__ == "__main__":
             #     print("Now checking the obs value")
             obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
 
+            # print(info_dict)
             # print("time step: ", time_step)
 
             #################### RL model output the follow_pos #############################
@@ -199,26 +209,22 @@ if __name__ == "__main__":
             next_nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
 
             ## TODO: check do I need to pass device here?
-            next_rl_obs = preprocess_rl_obs(next_nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
+            # next_rl_obs = preprocess_rl_obs(next_nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
 
-            rl_reward = np.array([reward])
-            rl_done = np.array([done])
-            rl_trainer.add_to_buffer(rl_obs, next_rl_obs, rl_actions, rl_reward, rl_done, [{}])
-            rl_trainer.update_episode_info(rl_reward)
-            if "reach_goal_reward" in info_dict:
-                rl_trainer.reporter["reach_goal_reward"].append(info_dict["reach_goal_reward"])
-                rl_trainer.reporter["reach_goal_reward_dense"].append(info_dict["reach_goal_reward_dense"])
-                rl_trainer.reporter["group_matching_reward"].append(info_dict["group_matching_reward"])
+            # rl_reward = np.array([reward])
+            # rl_done = np.array([done])
+            # rl_trainer.add_to_buffer(rl_obs, next_rl_obs, rl_actions, rl_reward, rl_done, [{}])
+            # rl_trainer.update_episode_info(rl_reward)
 
-            if rl_done.any():
-                rl_infos = {"is_success": np.array([info_dict["reach_goal_reward"] > 0])}   # info is a boolean value representing whether the robot reaches the target
-                rl_trainer.record_episode_info(rl_done, rl_infos)
+            # if rl_done.any():
+            #     rl_infos = {"is_success": np.array([info])}   # info is a boolean value representing whether the robot reaches the target
+            #     rl_trainer.record_episode_info(rl_done, rl_infos)
 
-            if rl_trainer.is_train_model():
-                train_info = rl_trainer.train_model()
+            # if rl_trainer.is_train_model():
+            #     train_info = rl_trainer.train_model()
 
-            rl_trainer.report_progress(tb_writer, train_info)
-            rl_trainer.save_model()
+            # rl_trainer.report_progress(tb_writer, train_info)
+            # rl_trainer.save_model()
             #################################################################################
 
 

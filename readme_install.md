@@ -58,3 +58,10 @@ mkdir data
 ## for RL
 pip install tensorboard
 pip install gymnasium
+
+
+
+# Run the program
+```bash
+python3 main.py --group --record --animate --react
+```

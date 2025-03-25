@@ -63,9 +63,11 @@ if __name__ == "__main__":
     args = get_args()
     
     fps = 1 / args.dt
-    num_datasets = 5
-    datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
-    dataset_idxes = [0, 1, 0, 1, 2]
+    # datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
+    datasets = ['eth']
+    # dataset_idxes = [0, 1, 0, 1, 2]
+    dataset_idxes = [0]
+    num_datasets = len(datasets)
 
     robot_speed = args.robot_speed
     least_num_people = args.num_ppl
@@ -80,6 +82,7 @@ if __name__ == "__main__":
                     [[4.5, 2], [10.5, 8]],
                     [[4.5, 3], [10.5, 9]],
                     [[4.5, 3], [10.5, 9]]]
+    
 
     start_end_pos = [[[[-8,5], [15,5]],
                     [[15,5], [-8,5]],
@@ -176,17 +179,17 @@ if __name__ == "__main__":
     with open(os.path.join("data", "all.json"), "w") as fp:
         json.dump(all_cases, fp)
 
-    # Generate a subset for tunning parameters
-    num_tune = 100
-    # If percentage based, uncomment these
-    # tune_percent = 0.2
-    # num_tune = int(len(all_cases) * tune_percent)
-    tune_cases = []
-    tune_idxes = np.random.permutation(len(all_cases))
-    tune_idxes = tune_idxes[:num_tune]
-    for idx in tune_idxes:
-        case = all_cases[idx]
-        tune_cases.append(case)
+    # # Generate a subset for tunning parameters
+    # num_tune = 100
+    # # If percentage based, uncomment these
+    # # tune_percent = 0.2
+    # # num_tune = int(len(all_cases) * tune_percent)
+    # tune_cases = []
+    # tune_idxes = np.random.permutation(len(all_cases))
+    # tune_idxes = tune_idxes[:num_tune]
+    # for idx in tune_idxes:
+    #     case = all_cases[idx]
+    #     tune_cases.append(case)
 
-    with open(os.path.join("data", "tune.json"), "w") as fp:
-        json.dump(tune_cases, fp)
+    # with open(os.path.join("data", "tune.json"), "w") as fp:
+    #     json.dump(tune_cases, fp)

@@ -6,6 +6,8 @@ import numpy as np
 from sim.environment import Buffer
 from sim.data_loader import DataLoader
 
+from get_start_end_region import get_start_end_loc_with_dataset
+
 # This script is used to generate test cases for the simulator
 # Adjust the arguments inside get_args
 # and the variables check_regions and start_end_pos
@@ -18,7 +20,10 @@ from sim.data_loader import DataLoader
 # on a linear speed of robot_speed from the specified start_end_pos.
 
 
-#### Versin: Take one pedestrian in the group, using the start / end position to set the robot path. And remove this person observation.
+# #### Version: Take one pedestrian in the group, using the start / end position to set the robot path. And remove this person observation.
+
+# Version: generate test cases for RL
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='test_case_generator')
@@ -62,6 +67,13 @@ def get_args():
 
     return args
 
+
+def get_start_end_pos():
+    return
+
+
+
+
 if __name__ == "__main__":
     args = get_args()
     
@@ -83,35 +95,7 @@ if __name__ == "__main__":
                     [[4.5, 2], [10.5, 8]],
                     [[4.5, 3], [10.5, 9]],
                     [[4.5, 3], [10.5, 9]]]
-
-    start_end_pos = [[[[-8,5], [15,5]],
-                    [[15,5], [-8,5]],
-                    [[5,0], [5,12.5]],
-                    [[5,12.5], [5,0]]],
-
-                    [[[2,-10.5], [2,4.5]],
-                    [[2,4.5], [2,-10.5]],
-                    [[5,-3], [-3,-3]],
-                    [[-3,-3], [5,-3]]],
-
-                    [[[-0.5,5], [15.5,5]],
-                    [[15.5,5], [-0.5,5]],
-                    [[7.5,8], [7.5,2]],
-                    [[7.5,2], [7.5,8]]],
-
-                    [[[-0.5,6], [16,6]],
-                    [[16,6], [-0.5,6]],
-                    [[7.5,9], [7.5,2.5]],
-                    [[7.5,2.5], [7.5,9]]],
-
-                    [[[0,6], [16,6]],
-                    [[16,6], [0,6]],
-                    [[7.5,13], [7.5,0]],
-                    [[7.5,0], [7.5,13]]]] # num_dset x n x 2 x 2
     
-    if not (len(datasets) == len(dataset_idxes) == len(check_regions) == len(start_end_pos)):
-        raise Exception("Given dataset information should have the same length!")
-
     interval = int(interval_factor * fps)
     all_cases = []
     for i in range(num_datasets):
@@ -136,10 +120,11 @@ if __name__ == "__main__":
                     num_ped_in_box += 1
             if num_ped_in_box >= least_num_people:
                 valid_frames.append(j)
-
+        count = 0
+        
         # generate test case
-        for st_ed in start_end_pos[i]:
-            region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2, 
+        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 20):
+            region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2,
                                     (region[0][1] + region[1][1]) / 2])
             st_pt = np.array(st_ed[0])
             ed_pt = np.array(st_ed[1])
@@ -148,7 +133,6 @@ if __name__ == "__main__":
             dist_to_end = np.linalg.norm(ed_pt - st_pt)
             time_to_end = int(round(dist_to_end / robot_speed * fps))
             
-            count = 0
             time_limit = time_to_end * time_limit_factor
             for v_frame in valid_frames:
                 if v_frame >= time_to_mid:
@@ -167,29 +151,29 @@ if __name__ == "__main__":
                                 'end_pos': ed_pt.tolist(), 
                                 'start_frame': start_frame, 
                                 'time_limit': time_limit}
-                        count += 1
+
                         cases.append(elem)
                         all_cases.append(elem)
-            print(count)
 
         print("Num cases: ", len(cases))
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
-
+    print("Total num cases: ", len(all_cases))
     with open(os.path.join("data", "all.json"), "w") as fp:
         json.dump(all_cases, fp)
+    
+    
+    # # Generate a subset for tunning parameters
+    # num_tune = 100
+    # # If percentage based, uncomment these
+    # # tune_percent = 0.2
+    # # num_tune = int(len(all_cases) * tune_percent)
+    # tune_cases = []
+    # tune_idxes = np.random.permutation(len(all_cases))
+    # tune_idxes = tune_idxes[:num_tune]
+    # for idx in tune_idxes:
+    #     case = all_cases[idx]
+    #     tune_cases.append(case)
 
-    # Generate a subset for tunning parameters
-    num_tune = 100
-    # If percentage based, uncomment these
-    # tune_percent = 0.2
-    # num_tune = int(len(all_cases) * tune_percent)
-    tune_cases = []
-    tune_idxes = np.random.permutation(len(all_cases))
-    tune_idxes = tune_idxes[:num_tune]
-    for idx in tune_idxes:
-        case = all_cases[idx]
-        tune_cases.append(case)
-
-    with open(os.path.join("data", "tune.json"), "w") as fp:
-        json.dump(tune_cases, fp)
+    # with open(os.path.join("data", "tune.json"), "w") as fp:
+    #     json.dump(tune_cases, fp)

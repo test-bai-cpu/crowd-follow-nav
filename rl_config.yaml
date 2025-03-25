@@ -1,35 +1,32 @@
-# ENV
-max_follow_pos_delta: 10
-
 # Training - Steps
-num_samples_before_learning: 1000 # 4096
+num_samples_before_learning: 5000
 num_samples_before_evaluation: 0
 num_eval_episodes: 10
 
 # Training - Frequency
 train_policy_freq: 2
 target_network_update_freq: 1
-report_rollout_freq: 1000 # 3200
-report_loss_freq: 3200
+report_rollout_freq: 5000
+report_loss_freq: 5000
 save_model_freq: 100000
 eval_freq: 5000000
 
 # RL - Environment
-state_shape: [400,]             # state: [2,] / image: [3, 3, 3]
+state_shape: [42,]  # [402,]             # state: [2,] / image: [3, 3, 3]
 action_shape: [4, ]
 
 # RL - Algorithm
 gamma: 0.99                     # Discount factor
 tau: 0.005                      # Update the target
-buffer_size: 100_000            # 300_000 will reduce the performance
+buffer_size: 200_000  # 100_000
 
 # Network learning
 batch_size: 256
 train_freq: 1                   # Update the model every train_freq steps
 training_intensity: 1           # Number of times for repeat replaying buffer
 actor_learning_rate: 0.0003
-critic_learning_rate: 0.001
-entropy_learning_rate: 0.001
+critic_learning_rate: 0.001  # 0.0003  # 0.001
+entropy_learning_rate: 0.001  # 0.0003  # 0.001
 decay_lr: False
 decay_lr_final_scale:           # The total ratio of decay learning rate
 
@@ -37,6 +34,6 @@ decay_lr_final_scale:           # The total ratio of decay learning rate
 autotune: True                  # NOTE: Don't change this!
 entropy_alpha: 0.3
 target_entropy:
-latent_dim: 128
+latent_dim: 512  # 128
 
 result_dir: ./results

@@ -123,7 +123,7 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(f"{rl_config['result_dir']}/logs/{args.exp_name}/{int(time.time())}")
     logger.info(f"RL result directory: {result_dir}")
     ########################################################################
-    # sim.case_id_list.sort()
+
     np.random.shuffle(sim.case_id_list)
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
@@ -134,7 +134,9 @@ if __name__ == "__main__":
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
 
-    for case_id in sim.case_id_list:
+    for case_id in sim.case_id_list[:1]:
+        # if case_id <= 42:
+        #     continue
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -148,12 +150,12 @@ if __name__ == "__main__":
 
             ############ RL model output the follow_pos ############
             rl_trainer.global_step += 1
-            rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
             if rl_trainer.is_learning_starts():
+                rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
                 rl_actions, _, entropies = rl_agent.get_action(torch.FloatTensor(rl_obs).to(device))
                 rl_actions = rl_actions.cpu().detach().numpy()
             else:
-                # rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
+                rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
                 rl_actions = rl_agent.random_actions()
 
             # Rescale actions. rl_actions is (1, 4): pos_x, pos_y, vel_x, vel_y, and they are all relative values to the robot, both pos and vel
@@ -204,14 +206,10 @@ if __name__ == "__main__":
             rl_reward = np.array([reward])
             rl_done = np.array([done])
             rl_trainer.add_to_buffer(rl_obs, next_rl_obs, rl_actions, rl_reward, rl_done, [{}])
-            rl_trainer.update_episode_info(rl_reward)
-            if "reach_goal_reward" in info_dict:
-                rl_trainer.reporter["reach_goal_reward"].append(info_dict["reach_goal_reward"])
-                rl_trainer.reporter["reach_goal_reward_dense"].append(info_dict["reach_goal_reward_dense"])
-                rl_trainer.reporter["group_matching_reward"].append(info_dict["group_matching_reward"])
+            rl_trainer.update_episode_info(rl_reward, info_dict)
 
             if rl_done.any():
-                rl_infos = {"is_success": np.array([info_dict["reach_goal_reward"] > 0])}   # info is a boolean value representing whether the robot reaches the target
+                rl_infos = {"is_success": np.array([info])}   # info is a boolean value representing whether the robot reaches the target
                 rl_trainer.record_episode_info(rl_done, rl_infos)
 
             if rl_trainer.is_train_model():

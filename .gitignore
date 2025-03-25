@@ -1,7 +1,8 @@
-data/
+dasta/
+results/
 exps/
 Python-RVO2/
-venv/
+.myvenv/
 sim/*_dataset/
 *.tar
 
