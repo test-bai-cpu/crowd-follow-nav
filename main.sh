@@ -10,6 +10,7 @@ python3 main.py --group --record --react --exp_name e001_10human_rlB256UTD1RB20L
 python3 main.py --group --record --react --exp_name e001_10human_rlB256UTD4_fixSuccess
 python3 main.py --group --record --react --exp_name e001_10human_rlB256UTD4_mpccost  #(UTD1LD128)
 python3 main.py --group --record --react --exp_name e001_10human_rlB256UTD1LD512_mpccost
+python3 main.py --group --record --react --exp_name e001_10human_rlB256UTD1LD32_mpccost
 
 
 
