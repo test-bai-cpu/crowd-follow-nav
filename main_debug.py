@@ -129,6 +129,7 @@ if __name__ == "__main__":
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
 
+
     # mpc_horizon = mpc_config.getint('mpc_env', 'mpc_horizon')
     # max_speed = mpc_config.getfloat('mpc_env', 'max_speed')
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
