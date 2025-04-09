@@ -9,4 +9,19 @@
 ```
 This valus is used for normalization of the follow pos. Because follow pos is a relative value to current robot pos.
 
-2. 
+
+
+
+# DOCKER
+
+```bash
+docker pull dockerhuaniden/crowd-nav-dev:latest
+
+git pull https://github.com/test-bai-cpu/crowd-follow-nav.git
+
+# Datasets: ewap_dataset, ucy_dataset put in crowd-follow-nav/sim
+
+docker run -it --rm \
+  -v /home/yufei/research/crowd-follow-nav:/crowd-follow-nav \
+  crowd-nav-dev
+```
