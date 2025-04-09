@@ -52,6 +52,9 @@ def grouping(position_array, velocity_array, params):
     # labels: the group membership of each person
 
     num_people = len(position_array)
+    if num_people == 0:
+        return []
+    
     vel_orientation_array = []
     vel_magnitude_array = []
     for [vx, vy] in velocity_array:

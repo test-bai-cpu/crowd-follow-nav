@@ -5,29 +5,26 @@ import numpy as np
 class BaseMPC(ABC):
     # Base class for sampling-based MPC
 
-    def __init__(self, args, logger):
-        # MPC parameters
+    def __init__(self, mpc_config, args, logger):
+        if mpc_config is not None:
+            self.configure(mpc_config)
+        else:
+            raise ValueError('Please provide a configuration file')
 
-        self.animate = args.animate
-        self.paint_boundary = args.paint_boundary
-        if self.animate and (not self.paint_boundary):
-            self.boundary_pts = None
+        self.use_a_omega = args.use_a_omega
+        self.differential = args.differential
+
+        # MPC parameters
 
         self.laser = args.laser
         self.differential = args.differential
 
-        self.dt = args.dt
-        self.time_horizon = args.time_horizon
-        self.future_steps = args.future_steps
         self.num_directions = args.num_directions
         self.num_linear = args.num_linear
         self.num_angular = args.num_angular
-        self.robot_speed = args.robot_speed
-        self.turn_speed = args.turn_speed
+
         self.logger = logger
 
-        self.dist_weight = args.dist_weight # weight for distance cost
-        self.goal_weight = args.goal_weight
         self.gamma = args.gamma # discount factor
 
         self.rollouts = None
@@ -37,22 +34,50 @@ class BaseMPC(ABC):
         self.robot_pos = None
         self.robot_th = None
         self.robot_vel = None
+        
+        self.follow_state = None
 
         self.state_time = []
         self.eval_time = []
         return
 
+    def configure(self, config):
+        self.pref_speed =  config.getfloat('mpc_env', 'pref_speed')
+        self.max_speed = config.getfloat('mpc_env', 'max_speed')
+        self.max_rev_speed = config.getfloat('mpc_env', 'max_speed')
+        self.max_rot = config.getfloat('mpc_env', 'max_rot_degrees')
+        self.max_l_acc = config.getfloat('mpc_env', 'max_l_acc')
+        self.max_l_dcc = config.getfloat('mpc_env', 'max_l_dcc')
+
+        self.max_human_groups = config.getint('mpc_env', 'max_human_groups')
+        self.max_humans = config.getint('mpc_env', 'max_humans')
+        self.mpc_horizon = config.getint('mpc_env', 'mpc_horizon')
+        self.max_mp_steps = config.getint('mpc_env', 'max_mp_steps')
+        
+        self.max_obs_distance = config.getfloat('mpc_env', 'max_obs_distance')
+        
+        # self.use_a_omega = config.getboolean('mpc_env', 'use_a_omega')
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('pref_speed', self.pref_speed))
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('max_speed', self.max_speed))
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('max_rev_speed', self.max_rev_speed))
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('max_rot', self.max_rot))
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('max_l_acc', self.max_l_acc))
+        # logging.info('[MPCEnv] Config {:} = {:}'.format('max_l_dcc', self.max_l_dcc))
+
+        self.dt = config.getfloat('mpc_env', 'dt')
+
+
+    ## action should be v, w. 
     def generate_rollouts(self):
         # Generate rollouts for MPC
-        len_horizon = self.future_steps
         
         if self.robot_pos is None:
             self.logger.error('Robot position is not set')
             raise ValueError('Robot position is not set')
         start_config = self.robot_pos
         dt = self.dt
-        vel = self.robot_speed
-        omg = self.turn_speed
+        vel = self.max_speed
+        omg = self.max_rot
 
         if self.differential:
             if self.robot_th is None:
@@ -71,14 +96,14 @@ class BaseMPC(ABC):
             V = np.append(V, 0)
             W = np.append(W, 0)
             num_rollouts = V.shape[0]
-            rollouts = np.zeros((num_rollouts, len_horizon, 2), dtype=np.float32)
+            rollouts = np.zeros((num_rollouts, self.mpc_horizon, 2), dtype=np.float32)
 
             epsilon = 1e-6
             cond = (np.abs(W) < epsilon)
             W = np.where(cond, epsilon, W)
 
-            # Generate rollouts for each (v, w) pair
-            for i in range(len_horizon):
+            # Generate rollouts for each (v, w) pair. Differential.
+            for i in range(self.mpc_horizon):
                 t = (i + 1) * dt
                 rollouts[:, i, 0] = start_config[0] + np.where(cond, V * t * np.cos(start_th), 
                                                                V / W * (np.sin(start_th + W * t) - np.sin(start_th)))
@@ -91,9 +116,9 @@ class BaseMPC(ABC):
             num_rollouts = self.num_directions
 
             angles = np.linspace(np.radians(-180), np.radians(180), num_rollouts, endpoint=True)
-            rollouts = np.zeros((num_rollouts * 9 + 1, len_horizon, 2), dtype=np.float32)
+            rollouts = np.zeros((num_rollouts * 9 + 1, self.mpc_horizon, 2), dtype=np.float32)
             # radius of curvature, assuming the full curve is a quater circle.
-            R1 = vel * dt * (len_horizon - 1) / (np.pi / 2)
+            R1 = vel * dt * (self.mpc_horizon - 1) / (np.pi / 2)
 
             # Generate rollouts
             # Each group of rollouts is generated with three levels of velocities and angular velocities
@@ -101,7 +126,7 @@ class BaseMPC(ABC):
             # Each one is along a different direction.
             # The first group is the fastest, the second group is 2/3 of the fastest, and the third group is 1/3 of the fastest
             # The last one is the stationary rollout.
-            for i in range(len_horizon):
+            for i in range(self.mpc_horizon):
                 t = i + 1
                 rollouts[:num_rollouts, i, 0] = start_config[0] + (vel * dt * t * np.sin(angles[:]))
                 rollouts[:num_rollouts, i, 1] = start_config[1] + (vel * dt * t * np.cos(angles[:]))
@@ -166,13 +191,8 @@ class BaseMPC(ABC):
         pass
 
     @abstractmethod
-    def evaluate_rollouts(self, mpc_weight=None):
+    def evaluate_rollouts(self):
         # Evaluate rollouts for MPC
-        pass
-
-    @abstractmethod
-    def add_boundaries(self, frame):
-        # Add boundaries to the frame for viaulizing boundaries
         pass
         
     def get_processing_time(self):
@@ -182,18 +202,19 @@ class BaseMPC(ABC):
         else:
             return np.mean(self.state_time), np.mean(self.eval_time)
 
-    def act(self, obs, done=False):
+    def get_action(self, obs, target, follow_state):
         # Produce action based on observation for the MPC
         # Inputs:
         # obs: the observation
         # Outputs:
         # action: the action
         # time: the time spent on state and evaluation
-
-        self.robot_pos = obs['robot_pos']
-        self.robot_vel = obs['robot_vel']
+        
+        self.robot_pos = np.array([obs['robot_pos'][0], obs['robot_pos'][1]])
+        self.robot_vel = obs['robot_vel'][0]
         self.robot_th = obs['robot_th']
-        self.robot_goal = obs['robot_goal']
+        self.robot_goal = target
+        self.follow_state = follow_state
     
         self.generate_rollouts()
 
@@ -207,6 +228,8 @@ class BaseMPC(ABC):
         
         best_idx = np.argmin(self.rollout_costs)
         action = self.rollouts_action[best_idx]
+        
+        # print("action: ", action)
 
         self.state_time.append(state_time_end - state_time_start)
         self.eval_time.append(eval_time_end - eval_time_start)

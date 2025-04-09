@@ -209,7 +209,7 @@ if __name__ == "__main__":
         follow_vel = rl_actions[:, 2:].copy()
 
         ## Now rerange the follow_pos and follow_vel
-        follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) / 2 - max_follow_pos_delta     # Since max_follow_pos_delta > 0
+        follow_pos = follow_pos * max_follow_pos_delta     # Since max_follow_pos_delta > 0
         # revert the relative pos to global pos
         follow_pos = follow_pos + current_state[:, :2]
 

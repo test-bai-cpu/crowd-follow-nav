@@ -402,6 +402,10 @@ class Simulator(object):
 
         self.start_pos = case['start_pos']
         self.goal_pos = case['end_pos']
+        # self.start_pos = case['end_pos']
+        # self.goal_pos = case['start_pos']
+        
+        
         self.start_frame = case['start_frame']
         self.time_limit = self.start_frame + case['time_limit']
 
@@ -560,14 +564,15 @@ class Simulator(object):
         reward = 0
 
         if follow_state is not None:
-            follow_pos = follow_state[0, :2]
-            follow_vel = follow_state[0, 2:]
-            if np.sum(follow_vel) < 1e6:
-                self.follow_pos = follow_pos # x, y
-                self.follow_vel = follow_vel # speed, motion_angle
-            else:
-                self.follow_pos = None
-                self.follow_vel = None
+            follow_pos = follow_state[0, :2].copy()
+            self.follow_pos = follow_pos
+            # follow_vel = follow_state[0, 2:]
+            # if np.sum(follow_vel) < 1e6:
+            #     self.follow_pos = follow_pos # x, y
+            #     self.follow_vel = follow_vel # speed, motion_angle
+            # else:
+            #     self.follow_pos = None
+            #     self.follow_vel = None
         # action is the robot velocity
         # action is a 2D numpy array
         # action[0] is the x velocity, or linear velocity if differential drive
@@ -724,7 +729,7 @@ class Simulator(object):
 
         reward += reach_goal_reward
         reward += reach_goal_reward_dense
-        reward += group_matching_score
+        # reward += group_matching_score
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,
@@ -746,7 +751,6 @@ class Simulator(object):
             return 0
 
         for label, members in group_data.items():
-
             positions = np.array([m[0] for m in members])
 
             distances = np.linalg.norm(positions - self.robot_pos, axis=1)
@@ -861,10 +865,10 @@ class Simulator(object):
         curr_frame.append(plt.scatter(self.goal_pos[0], self.goal_pos[1], c='m', s=10))
 
         # for adding plot follow point, pos and vel in motion_angle, in quiver
-        if self.follow_pos is not None and self.follow_vel is not None:
-            curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=10))
-            u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
-            curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))
+        if self.follow_pos is not None:
+            curr_frame.append(plt.scatter(self.follow_pos[0], self.follow_pos[1], c='b', s=15))
+            # u, v = mpc_utils.pol2cart(self.follow_vel[0], self.follow_vel[1])
+            # curr_frame.append(plt.quiver(self.follow_pos[0], self.follow_pos[1], u, v, color='b', scale=1, scale_units='xy', angles='xy'))
 
         pedestrians_pos = np.array(self.pedestrians_pos)
         pedestrians_vel = np.array(self.pedestrians_vel)

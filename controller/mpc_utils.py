@@ -4,8 +4,6 @@ import math
 import numpy as np
 
 
-
-
 def dynamics(use_a_omega, differential, state, control, dt):
     if use_a_omega: ### dynamics when (a, omega) are control inputs
         x, y, v, theta = state[0], state[1], state[2], state[3]

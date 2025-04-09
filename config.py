@@ -10,7 +10,7 @@ def get_args():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="exps/results",
+        default="exps/results_rl1",
         help="Path to save experiment results"
     )
 
@@ -231,6 +231,21 @@ def get_args():
         type=int,
         default=2,
         help="Number of parallel environments"
+    )
+
+    # MPC configuration
+    parser.add_argument(
+        "--num-directions",
+        type=int,
+        default=12,
+        help="number of general direction rollouts for MPC"
+    )
+
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0.9,
+        help="discount factor for cost estimation"
     )
 
     try:

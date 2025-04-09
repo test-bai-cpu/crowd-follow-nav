@@ -182,8 +182,6 @@ class CrowdAwareMPC:
         }
         opti.solver("ipopt", opts)
 
-
-
         # Store solver attributes
         self.opti = opti
         self.opti_dict = {

@@ -56,8 +56,8 @@ mkdir data
 
 
 ## for RL
-pip install tensorboard
-pip install gymnasium
+pip install tensorboard==2.13.0
+pip install gymnasium==1.1.0
 
 
 

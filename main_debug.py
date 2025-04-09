@@ -164,7 +164,7 @@ if __name__ == "__main__":
             follow_vel = rl_actions[0, 2:].copy()
 
             ## Now rerange the follow_pos and follow_vel
-            follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) / 2 - max_follow_pos_delta     # Since max_follow_pos_delta > 0
+            follow_pos = follow_pos * max_follow_pos_delta   # Since max_follow_pos_delta > 0
             # revert the relative pos to global pos
             follow_pos = follow_pos + current_state[:2]
 
@@ -180,17 +180,7 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
             action_mpc, _ = mpc.get_action(current_state, target, nearby_human_state, follow_state)
-            # print("--- action ---")
-            # print("use a_omega is: ", args.use_a_omega, ", and action_mpc: ", action_mpc)
-            ## action a, omega to vx, vy
-            ## obs_robot_vel is vx, vy, now I have action a, omega, I want to compute the new robot_vel in vx, vy
-            # robot_speed_new = robot_speed + action_mpc[0] * args.dt
-            # robot_motion_angle_new = robot_motion_angle + action_mpc[1] * args.dt
-            # action = np.array([robot_speed_new * np.cos(robot_motion_angle_new), robot_speed_new * np.sin(robot_motion_angle_new)])
-            # print("vxvy: ", action)
-            # print("speed: ", robot_speed_new, "motion_angle: ", robot_motion_angle_new)
-            # if time_step == 1593:
-            #     print("Now checking the obs value")
+
             obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
 
             # print("time step: ", time_step)
