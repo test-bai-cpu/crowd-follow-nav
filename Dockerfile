@@ -1,27 +1,35 @@
 FROM pytorch/pytorch:2.4.1-cuda12.1-cudnn9-devel
 
 # Set the working directory
-WORKDIR /crowd-follow-nav
+WORKDIR /workdir
 
-COPY ./PySocialForce /crowd-follow-nav/PySocialForce
-COPY ./Python-RVO2 /crowd-follow-nav/Python-RVO2
+COPY ./PySocialForce /workdir/PySocialForce
+COPY ./Python-RVO2 /workdir/Python-RVO2
 
 
-COPY ./requirements.txt /crowd-follow-nav/requirements.txt
+COPY ./requirements.txt /workdir/requirements.txt
 
-RUN pip install -r /crowd-follow-nav/requirements.txt
+RUN pip install -r /workdir/requirements.txt
 
-RUN apt-get update && apt-get install -y cmake
-RUN apt-get update && apt-get install -y cmake build-essential git
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    ffmpeg \
+    cmake \
+    build-essential \
+    git
 
 # Install Python-RVO2
-RUN cd /crowd-follow-nav/Python-RVO2 && \
+RUN cd /workdir/Python-RVO2 && \
     pip install Cython && \
     python setup.py build && \
     python setup.py install
 
 # Install PySocialForce in editable mode
-RUN cd /crowd-follow-nav/PySocialForce && \
+RUN cd /workdir/PySocialForce && \
     pip install -e '.[test,plot]'
     
     

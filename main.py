@@ -72,6 +72,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=level, handlers=[stdout_handler, file_handler],
 						format='%(asctime)s, %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
     logger = logging.getLogger(__name__)
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+    logging.getLogger('numba').setLevel(logging.WARNING)
+    logging.getLogger('byteflow').setLevel(logging.WARNING)
 
     check_args(args, logger)
 
