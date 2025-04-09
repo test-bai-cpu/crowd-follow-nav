@@ -9,5 +9,4 @@ docker build -t crowd-nav-dev .
 
 docker run -it --rm \
   -v /home/yufei/research/crowd-follow-nav:/crowd-follow-nav \
-  -w /crowd-follow-nav \
   crowd-nav-dev

@@ -6,6 +6,9 @@ WORKDIR /crowd-follow-nav
 COPY ./PySocialForce /crowd-follow-nav/PySocialForce
 COPY ./Python-RVO2 /crowd-follow-nav/Python-RVO2
 
+
+COPY ./requirements.txt /crowd-follow-nav/requirements.txt
+
 RUN pip install -r /crowd-follow-nav/requirements.txt
 
 RUN apt-get update && apt-get install -y cmake
