@@ -6,6 +6,8 @@ import numpy as np
 from obs_data_parser import ObsDataParser
 from sim.simulator import Simulator
 
+import random
+
 
 class SimulatorGym(Simulator, gym.Env):
     def __init__(self, env_config):
@@ -16,7 +18,7 @@ class SimulatorGym(Simulator, gym.Env):
         self.obs_data_parser = ObsDataParser(env_config["mpc_config"],
                                              env_config["args"])
         self.case_id_idx = 0
-        np.random.shuffle(self.case_id_list)
+        # np.random.shuffle(self.case_id_list)
         self.observation_space = spaces.Dict({
             "rl_obs": spaces.Box(
                 low=-np.inf, high=np.inf, shape=env_config["observation_shape"],
@@ -54,7 +56,7 @@ class SimulatorGym(Simulator, gym.Env):
         goal_pos = goal_pos - current_pos
         obs = obs.reshape(1, -1)
         obs = np.concatenate([goal_pos, obs], axis=1)
-        return obs
+        return obs.squeeze(0)
 
     def _get_obs(self, observation_dict):
         obs = observation_dict      # To fit the code below
@@ -85,7 +87,7 @@ class SimulatorGym(Simulator, gym.Env):
         self.case_id_idx += 1
 
         self.logger.info(f"Now in the case id: {case_id}")
-        return obs, {}
+        return obs, {"obs_dict": [observation_dict]}
 
     def step(self, action):
         (observation_dict, reward, done,
@@ -95,7 +97,5 @@ class SimulatorGym(Simulator, gym.Env):
         terminated = success
         truncated = False if terminated else done
 
-        info = {**info_dict}
-        if truncated:
-            info["final_observation"] = obs["rl_obs"]
+        info = {**info_dict, "obs_dict": [observation_dict]}
         return obs, reward, terminated, truncated, info
