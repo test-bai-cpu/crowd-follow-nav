@@ -16,6 +16,7 @@ python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc
 python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_rot3  # max_rot_degrees = 3.14 and mpc_horizon = 10
 python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_rot3_rlRB100LR0003  # 0409 RL: RB100W,lr 0.0003
 python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_onlyGoal  # mpc cost to only follow and RL reward to only goal sparse and dense
+python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_eth0lefttoRight  # mpc cost to only follow and RL reward to only goal sparse and dense
 
 
 

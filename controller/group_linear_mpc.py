@@ -134,7 +134,8 @@ class GroupLinearMPC(BaseMPC):
             follow_pos = self.follow_state[0, :2]
 
             # follow_vel = self.follow_state[0, 2:]
-            position_cost = np.linalg.norm(self.rollouts[i, self.mpc_horizon-1] - follow_pos)
+            # position_cost = np.linalg.norm(self.rollouts[i, self.mpc_horizon-1] - follow_pos)
+            position_cost = np.min(np.linalg.norm(self.rollouts[i] - follow_pos, axis=1))
             
             # current_theta = self.robot_th + self.rollouts_action[i, 1] * self.dt * self.mpc_horizon
             # current_theta = np.mod(current_theta,2*np.pi)

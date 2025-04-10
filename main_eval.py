@@ -147,6 +147,7 @@ if __name__ == "__main__":
     random_id = np.random.randint(0, len(sim.case_id_list))
     
     for case_id in [2835]:
+    # for case_id in [1068]:
     # for case_id in [random_id]:
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
@@ -160,8 +161,10 @@ if __name__ == "__main__":
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
+            # print('current state: ', current_state)
             robot_vx = robot_speed * np.cos(robot_motion_angle)
             robot_vy = robot_speed * np.sin(robot_motion_angle)
+            # print('robot_vx robot_vy: ', robot_vx, robot_vy)
             nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
 
             # row1 = np.array([[1e6, 1e6, 1e6, 1e6]])
@@ -206,7 +209,7 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
             action_mpc = mpc.get_action(obs, target, follow_state)
-
+            # print("action_mpc: ", action_mpc)
             obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
 
             # print(info_dict)
@@ -217,7 +220,7 @@ if __name__ == "__main__":
             # robot_vx = robot_speed * np.cos(robot_motion_angle)
             # robot_vy = robot_speed * np.sin(robot_motion_angle)
             # next_nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 0 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
-
+            # print('NEXT robot_vx robot_vy: ', robot_vx, robot_vy)
             ## TODO: check do I need to pass device here?
             # next_rl_obs = preprocess_rl_obs(next_nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
 
