@@ -33,7 +33,7 @@ class Buffer(object):
         self.num_groups = 0
 
         self.if_processed_data = False
-        self.if_processed_group = False        
+        self.if_processed_group = False
 
         return
 
@@ -51,7 +51,7 @@ class Environment(object):
         self.logger = logger
 
         return
-    
+
     def preload_data(self, envs):
         # envs is a list of tuples (env_name, env_flag)
         for env in envs:
@@ -60,9 +60,9 @@ class Environment(object):
             buffer = data.update_buffer(buffer)
             self.env_dict[env] = buffer
         return
-    
+
     def select_env(self, env):
-        print(self.env_dict)
+        # print(self.env_dict)
         # env is (env_name, env_flag)
         self.env = self.env_dict[env]
         return self.env
