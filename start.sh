@@ -14,6 +14,32 @@ docker run -it --rm \
 
 # For deepgear
 docker run -it --rm \
+  --gpus all \
   --name crowd-follower \
   -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
   dockerhuaniden/crowd-nav-dev
+
+
+# For open in visualstudio code
+docker run -it --rm \
+  --gpus all \
+  --name crowd-follower \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev
+
+# For deepgear
+docker run -it --rm \
+  --gpus all \
+  --name crowd-follower-tbcheck \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev
+
+
+  # -p 6007:6007 \
+
+tensorboard --logdir results/logs --port 6007
+tensorboard --logdir /workdir/crowd-follow-nav/results --port 6007 --bind_all
+
+
+
+ssh -L 6007:localhost:6007 yzu@130.243.124.57

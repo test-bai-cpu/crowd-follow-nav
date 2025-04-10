@@ -39,8 +39,9 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
 
     goal_pos = np.array(goal_pos).reshape(1, -1)
     goal_pos = goal_pos - current_pos
+    goal_vx_vy = np.array([-robot_vx, -robot_vy]).reshape(1, -1)
     obs = obs.reshape(1, -1)
-    obs = np.concatenate([goal_pos, obs], axis=1)
+    obs = np.concatenate([goal_pos, goal_vx_vy, obs], axis=1)
     return obs
 
 #### -----------------------------------
@@ -98,7 +99,8 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    data_file = "all"
+    # data_file = "all"
+    data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
