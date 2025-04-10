@@ -10,3 +10,10 @@ docker build -t crowd-nav-dev .
 docker run -it --rm \
   -v /home/yufei/research/crowd-follow-nav:/workdir/crowd-follow-nav \
   crowd-nav-dev
+
+
+# For deepgear
+docker run -it --rm \
+  --name crowd-follower \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev
