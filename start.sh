@@ -12,6 +12,7 @@ docker run -it --rm \
   crowd-nav-dev
 
 
+
 # For deepgear
 docker run -it --rm \
   --gpus all \
@@ -20,19 +21,6 @@ docker run -it --rm \
   dockerhuaniden/crowd-nav-dev
 
 
-# For open in visualstudio code
-docker run -it --rm \
-  --gpus all \
-  --name crowd-follower \
-  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
-  dockerhuaniden/crowd-nav-dev
-
-# For deepgear
-docker run -it --rm \
-  --gpus all \
-  --name crowd-follower-tbcheck \
-  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
-  dockerhuaniden/crowd-nav-dev
 
 
   # -p 6007:6007 \

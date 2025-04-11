@@ -407,7 +407,7 @@ class Simulator(object):
         
         
         self.start_frame = case['start_frame']
-        self.time_limit = self.start_frame + case['time_limit']
+        self.time_limit = self.start_frame + 3 * case['time_limit']
 
         self.env = self.envs.select_env((self.env_name, self.env_flag))
         self._init_group_params()

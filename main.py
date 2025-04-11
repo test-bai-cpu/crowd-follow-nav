@@ -198,6 +198,8 @@ if __name__ == "__main__":
                 ################################
 
                 obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+                if done == True:
+                    break
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)

@@ -25,3 +25,19 @@ docker run -it --rm \
   -v /home/yufei/research/crowd-follow-nav:/crowd-follow-nav \
   crowd-nav-dev
 ```
+
+
+# Run in deepgear now
+
+docker run -it --rm \
+  --gpus all \
+  --name crowd-follower \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev
+
+cd crowd-follow-nav
+
+python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiStep
+
+ctrl p q
+
