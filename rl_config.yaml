@@ -23,7 +23,7 @@ buffer_size: 1_000_000 # 200_000  # 100_000
 # Network learning
 batch_size: 256
 train_freq: 1                  # Update the model every train_freq steps
-training_intensity: 4           # Number of times for repeat replaying buffer
+training_intensity: 1           # Number of times for repeat replaying buffer
 actor_learning_rate: 0.0003
 critic_learning_rate: 0.001  # 0.001
 entropy_learning_rate: 0.001  # 0.001

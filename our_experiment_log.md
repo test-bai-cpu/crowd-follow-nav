@@ -13,4 +13,4 @@
  - Also we run the experiments, for change dimension from 42 to 44, for adding the goal vx, vy, which is -robotvx, -robotvy
 
 ## Apr 23
- - check the results from previous day, find that follow point bouncing too much, decide to run a version which run mpc 10 times, then generate one RL follow point. e004_l2r_goalvxvy_mpcMultiStep 
+ - check the results from previous day, find that follow point bouncing too much, decide to run a version which run mpc 10 times, then generate one RL follow point. e004_l2r_goalvxvy_mpcMultiStep. In this version, we also randomly select one case every time, and while true.

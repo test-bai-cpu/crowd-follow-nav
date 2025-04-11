@@ -140,7 +140,9 @@ if __name__ == "__main__":
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
 
-    for case_id in sim.case_id_list:
+    # for case_id in sim.case_id_list:
+    while True:
+        case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
