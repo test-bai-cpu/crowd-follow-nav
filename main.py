@@ -190,12 +190,14 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
 
-            ###### MPC generate action ######
-            # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
-            action_mpc = mpc.get_action(obs, target, follow_state)
-            ################################
 
-            obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+            for mpc_steps_in_one_follow_state in range(10):
+                ###### MPC generate action ######
+                # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
+                action_mpc = mpc.get_action(obs, target, follow_state)
+                ################################
+
+                obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)

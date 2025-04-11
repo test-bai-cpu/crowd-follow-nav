@@ -28,7 +28,6 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
     """ img_obs: A Numpy array with (max_human, 4) in float32.
         Process it into torch tensor with (bs, max_humna*4) in float32.
     """
-    # TODO: pos and vel should both based on the robot frame
     obs = obs.copy()
     current_state = current_state.copy()
     current_pos = current_state[:2].reshape(1, -1)
@@ -40,8 +39,9 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
 
     goal_pos = np.array(goal_pos).reshape(1, -1)
     goal_pos = goal_pos - current_pos
+    goal_vx_vy = np.array([-robot_vx, -robot_vy]).reshape(1, -1)
     obs = obs.reshape(1, -1)
-    obs = np.concatenate([goal_pos, obs], axis=1)
+    obs = np.concatenate([goal_pos, goal_vx_vy, obs], axis=1)
     return obs
 
 #### -----------------------------------
@@ -98,7 +98,8 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    data_file = "all"
+    # data_file = "all"
+    data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_maineval.csv")
@@ -143,7 +144,7 @@ if __name__ == "__main__":
                             mpc_config.getfloat('mpc_env', 'max_speed'))
     
     # get a case_id randomly from the case_id_list
-    np.random.seed(36)  # Set the seed for reproducibility
+    np.random.seed(5)  # Set the seed for reproducibility
     random_id = np.random.randint(0, len(sim.case_id_list))
     
     for case_id in [2835]:

@@ -18,6 +18,7 @@ python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc
 python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_onlyGoal  # mpc cost to only follow and RL reward to only goal sparse and dense
 python3 main.py --group --record --react --exp_name e003_followPosOnly_samplempc_eth0lefttoRight  # mpc cost to only follow and RL reward to only goal sparse and dense
 python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy  # mpc cost to only follow and RL reward to only goal sparse and dense
+python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiStep  # try to run mpc 10 steps for one RL step
 
 
 
@@ -31,7 +32,7 @@ python3 main_eval.py --group --record --react --animate --exp_name e002_10human_
 python3 main_eval.py --group --record --react --animate --exp_name e003_followPosOnly_samplempc --rl_model_weight n_samples_100000
 python3 main_eval.py --group --record --react --animate --exp_name e003_followPosOnly_samplempc_rot3 --rl_model_weight n_samples_2200000
 python3 main_eval.py --group --record --react --animate --exp_name e003_followPosOnly_samplempc_eth0lefttoRight --rl_model_weight n_samples_0600000
-python3 main_eval.py --group --record --react --animate --exp_name e003_followPosOnly_samplempc_onlyGoal --rl_model_weight n_samples_2200000
+python3 main_eval.py --group --record --react --animate --exp_name e004_l2r_goalvxvy --rl_model_weight n_samples_0900000
 
 
 results/e002_10human_rlB256UTD1LD32_mpccost_FollowRangeFix/n_samples_1500000
