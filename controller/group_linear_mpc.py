@@ -149,7 +149,7 @@ class GroupLinearMPC(BaseMPC):
             # print("cost follow: ", cost_follow)
             # print("cost safe: ", cost_safe)
             
-            # self.rollout_costs[i] = self.w_safe * cost_safe + self.w_follow * cost_follow
-            self.rollout_costs[i] = cost_follow
+            self.rollout_costs[i] = self.w_safe * cost_safe + self.w_follow * cost_follow
+            # self.rollout_costs[i] = cost_follow
             
         return
