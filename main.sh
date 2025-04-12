@@ -21,6 +21,7 @@ python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy  # mpc cos
 python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiStep  # try to run mpc 10 steps for one RL step
 python3 main.py --group --record --react --exp_name e005_all  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
 python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
+python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
 
 
 

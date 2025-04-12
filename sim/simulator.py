@@ -729,7 +729,7 @@ class Simulator(object):
 
         reward += reach_goal_reward
         reward += reach_goal_reward_dense
-        # reward += group_matching_score
+        reward += group_matching_score
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,
