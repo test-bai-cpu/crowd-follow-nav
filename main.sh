@@ -22,6 +22,7 @@ python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiSt
 python3 main.py --group --record --react --exp_name e005_all  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
 python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
 python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
+python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw2  # set reward follow weight is 2
 
 
 
@@ -38,6 +39,7 @@ python3 main_eval.py --group --record --react --animate --exp_name e003_followPo
 python3 main_eval.py --group --record --react --animate --exp_name e004_l2r_goalvxvy --rl_model_weight n_samples_0900000
 python3 main_eval.py --group --record --react --animate --exp_name e004_l2r_goalvxvy_mpcMultiStep --rl_model_weight n_samples_0800000
 python3 main_eval.py --group --record --react --animate --exp_name e005_all --rl_model_weight n_samples_0800000 ### For 
+python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcSafeCost_rlReward --rl_model_weight n_samples_0300000 ### For 
 
 
 

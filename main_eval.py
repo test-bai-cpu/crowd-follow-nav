@@ -98,8 +98,8 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    # data_file = "all"
-    data_file = "eth0_left_to_right"
+    data_file = "all"
+    # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_maineval.csv")
@@ -143,13 +143,10 @@ if __name__ == "__main__":
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
     
-    # get a case_id randomly from the case_id_list
-    np.random.seed(5)  # Set the seed for reproducibility
-    random_id = np.random.randint(0, len(sim.case_id_list))
-    
-    for case_id in [2835]:
+    # for case_id in [2835]:
     # for case_id in [1068]:
-    # for case_id in [random_id]:
+    for _ in range(50):
+        case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -183,7 +180,7 @@ if __name__ == "__main__":
             # Rescale actions. rl_actions is (1, 4): pos_x, pos_y, vel_x, vel_y, and they are all relative values to the robot, both pos and vel
             follow_pos = rl_actions[0, :2].copy()
             # follow_vel = rl_actions[0, 2:].copy()
-            print("rl_actions: ", rl_actions)
+            # print("rl_actions: ", rl_actions)
 
             ## Now rerange the follow_pos and follow_vel (-1, 1) -> (-3,3). 
             # follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) - max_follow_pos_delta     # Since max_follow_pos_delta > 0
@@ -203,7 +200,7 @@ if __name__ == "__main__":
 
             # follow_speed = np.linalg.norm(follow_vel)
             # follow_motion_angle = np.mod(np.arctan2(follow_vel[1], follow_vel[0]), 2 * np.pi)
-            print("follow pos: ", follow_pos)
+            # print("follow pos: ", follow_pos)
             follow_state = np.array([follow_pos[0], follow_pos[1], 0.0, 0.0])
             follow_state = follow_state.reshape(1, -1)
             #########################################################

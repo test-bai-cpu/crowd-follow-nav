@@ -725,7 +725,7 @@ class Simulator(object):
                                          np.linalg.norm(self.robot_pos - self.goal_pos))
         ## reward to getting closer to the goal with range: [0, 1]
         group_matching_score = self.get_group_score(observation_dict)
-        group_matching_reward = 0.5 * group_matching_score
+        group_matching_reward = 2 * group_matching_score
 
         reward += reach_goal_reward
         reward += reach_goal_reward_dense
