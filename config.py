@@ -10,7 +10,7 @@ def get_args():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="exps/results_fw5",
+        default="exps/results",
         help="Path to save experiment results"
     )
 

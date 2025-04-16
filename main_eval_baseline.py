@@ -151,7 +151,7 @@ if __name__ == "__main__":
         # case_id = random.choice(sim.case_id_list)
         # case_id = 2065
         sim.logger.info(f"Now in the case id: {case_id}")
-        obs = sim.reset(case_id)
+        obs = sim.reset(case_id) 
         done = False
         
         ###### MPC initialization ######

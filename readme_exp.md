@@ -42,6 +42,16 @@ python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiSt
 ctrl p q
 
 
+# Run in deepgear for evaluation
+docker run -it --rm \
+  --gpus all \
+  --name crowd-follower-eval-2 \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev
+
+cd crowd-follow-nav
+
+python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000
 
 # Copy logs from deepgear to my desktop
 scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/research/crowd-follow-nav/results/logs

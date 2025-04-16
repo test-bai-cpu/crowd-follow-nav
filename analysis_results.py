@@ -1,0 +1,46 @@
+import numpy as np
+import pandas as pd
+
+def get_results(res_file):
+    df = pd.read_csv(res_file)
+
+    # Compute success rate
+    total_cases = len(df)
+    print("In exp: ", res_file)
+    print("total cases: ", total_cases)
+    successful_cases = df['success'].sum()  # True is treated as 1
+    success_rate = successful_cases / total_cases
+
+    navigation_time_mean = df['navigation_time'].mean()
+    navigation_time_std = df['navigation_time'].std()
+
+    path_length_mean = df['path_length'].mean()
+    path_length_std = df['path_length'].std()
+
+    smoothness_mean = df["path_smoothness"].mean()
+    smoothness_std = df["path_smoothness"].std()
+
+    motion_smoothness_mean = df["motion_smoothness"].mean()
+    motion_smoothness_std = df["motion_smoothness"].std()
+
+    min_ped_dist_mean = df["min_ped_dist"].mean()
+    min_ped_dist_std = df["min_ped_dist"].std()
+
+    avg_ped_dist_mean = df["avg_ped_dist"].mean()
+    avg_ped_dist_std = df["avg_ped_dist"].std()
+
+    # Print results
+    print(f"Success rate: {success_rate:.2%}")
+    print(f"Navigation time: {navigation_time_mean:.2f} ± {navigation_time_std:.2f} seconds")
+    print(f"Path length: {path_length_mean:.2f} ± {path_length_std:.2f} meters")
+    print(f"Path smoothness: {smoothness_mean:.4f} ± {smoothness_std:.4f} meters")
+    print(f"Motion smoothness: {motion_smoothness_mean:.4f} ± {motion_smoothness_std:.4f} meters")
+    print(f"Min pedestrian distance: {min_ped_dist_mean:.2f} ± {min_ped_dist_std:.2f} meters")
+    print(f"Avg pedestrian distance: {avg_ped_dist_mean:.2f} ± {avg_ped_dist_std:.2f} meters")
+        
+    
+    
+
+get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv")
+get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv")
+get_results("exps/results/evas/test_e005_all_mpcSafeCost.csv")
