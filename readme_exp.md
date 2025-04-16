@@ -41,3 +41,7 @@ python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiSt
 
 ctrl p q
 
+
+
+# Copy logs from deepgear to my desktop
+scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/research/crowd-follow-nav/results/logs

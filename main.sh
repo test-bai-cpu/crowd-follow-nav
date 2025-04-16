@@ -40,8 +40,10 @@ python3 main_eval.py --group --record --react --animate --exp_name e004_l2r_goal
 python3 main_eval.py --group --record --react --animate --exp_name e004_l2r_goalvxvy_mpcMultiStep --rl_model_weight n_samples_0800000
 python3 main_eval.py --group --record --react --animate --exp_name e005_all --rl_model_weight n_samples_0800000 ### For 
 python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcSafeCost_rlReward --rl_model_weight n_samples_0300000 ### For 
+python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000 ### For 
 
-
+#### For quantitative evaluation
+python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000 ### For 
 
 
 results/e002_10human_rlB256UTD1LD32_mpccost_FollowRangeFix/n_samples_1500000

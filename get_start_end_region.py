@@ -6,11 +6,13 @@ def get_start_end_region(dataset, dataset_idx):
     start_region = []
     goal_region = []
     
-    if dataset == 'eth' and dataset_idx == 0:
+    if dataset == 'eth' and dataset_idx == 0: ### walking in horizontal
         start_region = [[[-8, -2], [-2, 10]], [[14, 2.5], [17, 7.5]]]
         goal_region = [[[14, 2.5], [17, 7.5]], [[-8, -2], [-2, 10]]]
+        # start_region = [[[-8, -2], [-2, 10]]]
+        # goal_region = [[[14, 2.5], [17, 7.5]]]
         
-    elif dataset == 'eth' and dataset_idx == 1: ## UCY
+    elif dataset == 'eth' and dataset_idx == 1: ## UCY ### walking in vertical
         start_region = [[2, -12], [5, -9]], [[-1, 3], [2, 6]]
         goal_region = [[2, 3], [5, 6]], [[-1, -12], [2, -9]]
         

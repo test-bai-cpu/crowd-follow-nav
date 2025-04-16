@@ -683,11 +683,11 @@ class Simulator(object):
             self.done = True
             self.fail_reason = "Time"
             self.logger.info("Time limit exceeded. Terminating episode.")
-        # elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
-        #     success = False
-        #     self.done = True
-        #     self.fail_reason = "Collision"
-        #     self.logger.info("Collision detected. Terminating episode.")
+        elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
+            success = False
+            self.done = True
+            self.fail_reason = "Collision"
+            self.logger.info("Collision detected. Terminating episode.")
         elif np.linalg.norm(self.robot_pos - self.goal_pos) < self.goal_radius:
             reach_goal_reward = 100
             success = True
@@ -725,11 +725,11 @@ class Simulator(object):
                                          np.linalg.norm(self.robot_pos - self.goal_pos))
         ## reward to getting closer to the goal with range: [0, 1]
         group_matching_score = self.get_group_score(observation_dict)
-        group_matching_reward = 2 * group_matching_score
+        group_matching_reward = 5 * group_matching_score
 
         reward += reach_goal_reward
         reward += reach_goal_reward_dense
-        reward += group_matching_score
+        reward += group_matching_reward
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,

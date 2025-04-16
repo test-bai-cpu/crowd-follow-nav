@@ -81,6 +81,10 @@ if __name__ == "__main__":
     num_datasets = 5
     datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
     dataset_idxes = [0, 1, 0, 1, 2]
+    # num_datasets = 1
+    # datasets = ['eth']
+    # dataset_idxes = [0]
+    
 
     robot_speed = args.robot_speed
     least_num_people = args.num_ppl
@@ -159,7 +163,7 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "all.json"), "w") as fp:
+    with open(os.path.join("data", "test.json"), "w") as fp:
         json.dump(all_cases, fp)
     
     
