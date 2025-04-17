@@ -167,7 +167,6 @@ class Simulator(object):
 
     def _update_from_dataset(self):
         # update the pedestrian attributes from the dataset
-
         self.pedestrians_pos = self.env.video_position_matrix[self.time]
         self.pedestrians_vel = self.env.video_velocity_matrix[self.time]
         self.pedestrians_idx = self.env.video_pedidx_matrix[self.time]
@@ -511,6 +510,42 @@ class Simulator(object):
 
         return ped_pos_new, ped_vel_new
 
+    ####### Does not consider robot position affect to human movement simulation
+    def rvo_step_norobot(self, ped_pos, ped_vel, ped_goals):
+        # dt is the time step
+        # robo_max_v is the robot maximum velocity
+        # t_horizon is the time horizon
+        # ped_pos is the pedestrian positions
+        # ped_vel is the pedestrian velocities
+        # ped_goals is the pedestrian goals
+
+        dt = self.dt
+        t_horizon = self.time_horizon
+        robo_max_v = self.robot_speed
+        # setting pedestrian max speed to robot max speed
+        ped_max_spd = robo_max_v
+
+        # initialize the simulator
+        # RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed)
+        sim = rvo2.PyRVOSimulator(dt, 2.5, 10, t_horizon, 2, 0.5, ped_max_spd)
+
+        # add the pedestrians
+        num_ped = len(ped_pos)
+        ped_list = []
+        for i in range(num_ped):
+            ped = sim.addAgent((ped_pos[i][0], ped_pos[i][1]))
+            ped_spd = np.linalg.norm(np.array(ped_vel[i]))
+            sim.setAgentVelocity(ped, (ped_vel[i][0], ped_vel[i][1]))
+            sim.setAgentMaxSpeed(ped, max(ped_spd, ped_max_spd))
+            sim.setAgentPrefVelocity(ped, self._get_pref_velocity(ped_pos[i], ped_goals[i], ped_max_spd))
+            ped_list.append(ped)
+
+        sim.doStep()
+
+        ped_pos_new = np.array([sim.getAgentPosition(ped) for ped in ped_list])
+        ped_vel_new = np.array([sim.getAgentVelocity(ped) for ped in ped_list])
+
+        return ped_pos_new, ped_vel_new
 
     def sfm_step(self, old_robot_pos, old_robot_vx_vy, ped_pos, ped_vel, ped_goals, group_labels):
         if len(ped_pos) == 0:  # Check if there are no pedestrians
@@ -543,6 +578,35 @@ class Simulator(object):
         ped_data_new = ped_data_all_steps[1]
         ped_pos_new = ped_data_new[:-1, :2]
         ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
+
+        return ped_pos_new, ped_vel_new
+
+    ####### Does not consider robot position affect to human movement simulation
+    def sfm_step_norobot(self, ped_pos, ped_vel, ped_goals, group_labels):
+        if len(ped_pos) == 0:  # Check if there are no pedestrians
+            ped_pos_new = np.empty((0, 2))  # Shape (0, 2)
+            ped_vel_new = np.empty((0, 2))  # Shape (0, 2)
+            return ped_pos_new, ped_vel_new
+
+        ped_pos = np.array(ped_pos).reshape(-1, 2)  # Shape (num_pedestrians, 2) (px,py)
+        ped_vel = np.array(ped_vel).reshape(-1, 2)  # Shape (num_pedestrians, 2) (vx,vy)
+        ped_goals = np.array(ped_goals).reshape(-1, 2)  # Shape (num_pedestrians, 2) (gx,gy)
+        ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
+        
+        group_dict = defaultdict(list)
+
+        for idx, label in enumerate(group_labels):
+            group_dict[label].append(idx)
+            
+        grouped_indices = list(group_dict.values())
+        sfm_config_file = Path(__file__).resolve().parent.parent.joinpath("sfm_config.toml")
+        sim = psf.Simulator(ped_data, groups=grouped_indices, obstacles=None, config_file=sfm_config_file)
+        sim.step()
+
+        ped_data_all_steps, _ = sim.get_states()
+        ped_data_new = ped_data_all_steps[1]
+        ped_pos_new = ped_data_new[:, :2]
+        ped_vel_new = ped_data_new[:, 2:4] # (vx, vy)
 
         return ped_pos_new, ped_vel_new
 
@@ -618,9 +682,13 @@ class Simulator(object):
             if self.react:
                 # use ORCA to update pedestrian positions
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
-                    # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
-                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
-                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step_norobot(
+                #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                #     old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
+                    self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward

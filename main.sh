@@ -24,8 +24,9 @@ python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost  # last
 python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward  # last try multistep succeed easily, Now try with all test cases, all maps with all directions
 python3 main.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw2  # set reward follow weight is 2
 python3 main.py --group --record --react --exp_name e006_rw10_0.1_10  # set reward for sparse goal, dense goal, follow to 10, 0.1, 10
-python3 main.py --group --record --react --exp_name e006_rw100_1_1_noreact  # set reward for sparse goal, dense goal, follow to 10, 0.1, 10
-
+python3 main.py --group --record --exp_name e006_rw100_1_1_noreact  # set reward for sparse goal, dense goal, follow to 10, 0.1, 10
+python3 main.py --group --record --react --exp_name e006_rw100_1_1_react
+python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot # use social force: sfm_step_norobot
 
 
 
