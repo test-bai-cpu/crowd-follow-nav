@@ -726,9 +726,9 @@ class Simulator(object):
         group_matching_score = self.get_group_score(observation_dict)
         group_matching_reward = group_matching_score
 
-        reward += 10 * reach_goal_reward
-        reward += 0.1 * reach_goal_reward_dense
-        reward += 10 * group_matching_reward
+        reward += 100 * reach_goal_reward
+        reward += 1 * reach_goal_reward_dense
+        reward += 1 * group_matching_reward
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,

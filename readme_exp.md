@@ -55,3 +55,6 @@ python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rl
 
 # Copy logs from deepgear to my desktop
 scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/research/crowd-follow-nav/results/logs
+
+
+tensorboard --logdir results/logs --port 6006
