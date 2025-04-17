@@ -27,6 +27,7 @@ python3 main.py --group --record --react --exp_name e006_rw10_0.1_10  # set rewa
 python3 main.py --group --record --exp_name e006_rw100_1_1_noreact  # set reward for sparse goal, dense goal, follow to 10, 0.1, 10
 python3 main.py --group --record --react --exp_name e006_rw100_1_1_react
 python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot # use social force: sfm_step_norobot
+python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_orcanorobot # use social force: orca_step_norobot
 
 
 

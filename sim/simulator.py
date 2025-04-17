@@ -684,7 +684,7 @@ class Simulator(object):
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
                 #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step_norobot(
-                #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
                 #     old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
