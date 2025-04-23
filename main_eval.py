@@ -5,6 +5,7 @@ import yaml
 import numpy as np
 import time
 import random
+import pandas as pd
 
 from config import get_args, check_args
 from sim.simulator import Simulator
@@ -98,7 +99,8 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    data_file = "test"
+    # data_file = "test"
+    data_file = "all_origin"
     # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
@@ -147,7 +149,16 @@ if __name__ == "__main__":
     # for case_id in [2835]:
     # for case_id in [1068]:
     # for _ in range(5):
+    
+    ######################### Get the test cases want to check ######################
+    # fail_case_file = "exps/failed_cases_noreward.csv"
+    # fail_case_df = pd.read_csv(fail_case_file)
+    # collision_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Collision']['case_id'].tolist()
+    # time_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Time']['case_id'].tolist()
+    #################################################################################
+    
     for case_id in sim.case_id_list:
+    # for case_id in collision_fail_case_ids:
         # case_id = random.choice(sim.case_id_list)
         # case_id = 2065
         sim.logger.info(f"Now in the case id: {case_id}")

@@ -719,6 +719,11 @@ class Simulator(object):
                 current_pedestrians_idx = self.env.video_pedidx_matrix[self.time]
                 for i in range(len(current_pedestrians_idx)):
                     if current_pedestrians_idx[i] not in self.history_idxes:
+                        #### if human appear location is too close to robot, dont add ####
+                        appear_distance = np.linalg.norm(old_robot_pos - self.env.video_position_matrix[self.time][i])
+                        if appear_distance < self.collision_radius:
+                            continue
+                        
                         self.history_idxes.append(current_pedestrians_idx[i])
                         new_pedestrians_idx.append(current_pedestrians_idx[i])
                         new_pedestrians_pos.append(self.env.video_position_matrix[self.time][i])

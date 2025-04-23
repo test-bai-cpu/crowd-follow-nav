@@ -63,10 +63,10 @@ if __name__ == "__main__":
     args = get_args()
     
     fps = 1 / args.dt
-    # datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
-    datasets = ['eth']
-    # dataset_idxes = [0, 1, 0, 1, 2]
-    dataset_idxes = [0]
+    datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
+    # datasets = ['eth']
+    dataset_idxes = [0, 1, 0, 1, 2]
+    # dataset_idxes = [0]
     num_datasets = len(datasets)
 
     robot_speed = args.robot_speed
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
 
-    with open(os.path.join("data", "all.json"), "w") as fp:
+    with open(os.path.join("data", "all_origin.json"), "w") as fp:
         json.dump(all_cases, fp)
 
     # # Generate a subset for tunning parameters

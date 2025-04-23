@@ -30,6 +30,7 @@ python3 main.py --group --record --exp_name e006_rw100_1_1_noreact_noreward  # s
 
 
 python3 main.py --group --record --react --exp_name e006_rw100_1_1_react
+python3 main.py --group --record --react --exp_name e006_rw100_1_1_react_noreward
 python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot # use social force: sfm_step_norobot
 python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_orcanorobot # use social force: orca_step_norobot
 
@@ -58,6 +59,12 @@ python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcS
 python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000 ### For 
 python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward --rl_model_weight n_samples_1200000 ### For 
 python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost --rl_model_weight n_samples_1000000 ### For 
+
+
+python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot
+python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot
+python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot_noreward
+python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot_noreward
 
 
 results/e002_10human_rlB256UTD1LD32_mpccost_FollowRangeFix/n_samples_1500000
