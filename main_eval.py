@@ -158,6 +158,7 @@ if __name__ == "__main__":
     #################################################################################
     
     for case_id in sim.case_id_list:
+    # for case_id in [130]:
     # for case_id in collision_fail_case_ids:
         # case_id = random.choice(sim.case_id_list)
         # case_id = 2065

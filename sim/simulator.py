@@ -685,10 +685,10 @@ class Simulator(object):
                 #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step_norobot(
                 #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
-                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
-                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
-                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
-                #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                    # old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
+                    self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward
@@ -721,7 +721,8 @@ class Simulator(object):
                     if current_pedestrians_idx[i] not in self.history_idxes:
                         #### if human appear location is too close to robot, dont add ####
                         appear_distance = np.linalg.norm(old_robot_pos - self.env.video_position_matrix[self.time][i])
-                        if appear_distance < self.collision_radius:
+                        # if appear_distance < self.collision_radius + 1e-2:
+                        if appear_distance < 0.2:
                             continue
                         
                         self.history_idxes.append(current_pedestrians_idx[i])

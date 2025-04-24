@@ -61,9 +61,9 @@ python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rl
 python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost --rl_model_weight n_samples_1000000 ### For 
 
 
-python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot
-python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot
-python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot_noreward
+# python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot
+python3 main_eval.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot
+# python3 main_eval.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot_noreward
 python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot_noreward
 
 
