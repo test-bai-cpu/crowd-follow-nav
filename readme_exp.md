@@ -35,6 +35,7 @@ docker run -it --rm \
   -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
   dockerhuaniden/crowd-nav-dev
 
+
 cd crowd-follow-nav
 
 python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiStep
@@ -55,6 +56,9 @@ python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rl
 
 # Copy logs from deepgear to my desktop
 scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/research/crowd-follow-nav/results/logs
+
+
+scp -r ~/research/crowd-follow-nav/results/e007_rw100_1_1_react_sfmnorobot yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results
 
 
 

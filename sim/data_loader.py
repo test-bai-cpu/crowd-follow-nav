@@ -62,6 +62,8 @@ class DataLoader():
         # ucy - 3              ZARA3
         # ucy - 4              UNIV2
         # ucy - 5              ARXIE (not recommended)
+        
+        # synthetic - 1        SYNTHETIC1
 
         self.dataset = dataset
         self.flag = flag
@@ -101,6 +103,9 @@ class DataLoader():
         elif dataset == 'atc':
             in_fps = 10
             read_success = self._read_atc_data(flag, in_fps)
+        elif dataset == 'synthetic':
+            in_fps = 10
+            read_success = self._read_synthetic_data(flag)
         else:
             self.logger.error('dataset argument must be \'eth\' or \'ucy\'')
             read_success = False
@@ -187,8 +192,36 @@ class DataLoader():
         self.has_video = False
 
         self.logger.info('ATC data reading done!')
+        
         return True
-    
+
+    def _read_synthetic_data(self, flag):
+        # synthetic dataset, fps 10 when generated in create_synthetic_data.py
+        # Data is stored into x_list, y_list, vx_list, vy_list
+        # Associated person_id and frames are stored into person_id_list, frame_id_list
+        # Inputs:
+        # Returns:
+        # True if data reading is successful
+        
+            
+        # columns = ["frame_id", "person_id", "x", "y", "vx", "vy"]
+        data = pd.read_csv(f"{self.base_path}/synthetic_data/traj_{flag}.csv")
+        self.total_num_frames = data["frame_id"].max()
+        
+        self.frame_id_list = data["frame_id"].round().astype(int).tolist()
+        self.person_id_list = data["person_id"].round().astype(int).tolist()
+
+        self.x_list = data["x"].tolist()
+        self.y_list = data["y"].tolist()
+
+        self.vx_list = data["vx"].tolist()
+        self.vy_list = data["vy"].tolist()
+
+        self.has_video = False
+
+        self.logger.info('Synthetic data reading done!')
+        
+        return True
 
     def _read_eth_data(self, flag):
         # Read data from the ETH dataset

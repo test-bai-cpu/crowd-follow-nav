@@ -38,6 +38,14 @@ python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnoro
 python3 main.py --group --record --react --exp_name e007_rw100_1_1_react_orcanorobot_noreward # use social force: orca_step_norobot
 
 
+### Test synthetic version in e008
+python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml ### for using traj_1
+python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --dset-file datasets_syn.yaml ### for using traj_2
+python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2_w5 --dset-file datasets_syn.yaml ### for using traj_2, using weight 5 for group follow reward
+python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_noreward --dset-file datasets_syn.yaml ### for using traj_1
+python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_noreward2 --dset-file datasets_syn.yaml ### for using traj_2
+
+
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
@@ -65,6 +73,13 @@ python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost --
 python3 main_eval.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot
 # python3 main_eval.py --group --record --react --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot_noreward
 python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot_noreward --rl_model_weight n_samples_0500000 --output-dir exps/results_collision_nonewappearped/e007_rw100_1_1_react_sfmnorobot_noreward
+
+
+### Use previous model to test on synthetic dataset
+python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml
+python3 main_eval.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward2 --dset-file datasets_syn.yaml
+python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml ### for using traj_2
+
 
 
 results/e002_10human_rlB256UTD1LD32_mpccost_FollowRangeFix/n_samples_1500000

@@ -74,18 +74,20 @@ def get_results(res_file):
     return result
     
 files = [
-    "exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv",
-    "exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv",
-    "exps/results/evas/test_e005_all_mpcSafeCost.csv"
+    # "exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv",
+    # "exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv",
+    # "exps/results/evas/test_e005_all_mpcSafeCost.csv"
     # "exps/results/evas/test_e007_rw100_1_1_react_sfmnorobot_noreward.csv",
     # "exps/results/evas/test_e007_rw100_1_1_react_sfmnorobot.csv"
+    "exps/183/all_origin_e007_rw100_1_1_react_sfmnorobot_noreward.csv",
+    "exps/183/all_origin_e007_rw100_1_1_react_sfmnorobot.csv"
     
 ]
 
 all_results = [get_results(f) for f in files]
 
 results_df = pd.DataFrame(all_results)
-results_df.to_csv("exps/summary_results.csv", index=False)
+results_df.to_csv("exps/183/summary_results.csv", index=False)
 
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv")
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv")

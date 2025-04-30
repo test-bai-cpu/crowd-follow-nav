@@ -75,12 +75,20 @@ def get_start_end_pos():
 
 
 if __name__ == "__main__":
+    # for generating train
+    # np.random.seed(42)
+    # for generating test
+    np.random.seed(20)
+    
+    
     args = get_args()
     
     fps = 1 / args.dt
-    num_datasets = 5
-    datasets = ['eth', 'eth', 'ucy', 'ucy', 'ucy']
-    dataset_idxes = [0, 1, 0, 1, 2]
+    
+    num_datasets = 1
+    datasets = ['synthetic']
+    dataset_idxes = [2]
+    
 
     robot_speed = args.robot_speed
     least_num_people = args.num_ppl
@@ -90,11 +98,7 @@ if __name__ == "__main__":
     check_start_radius = 1
 
     # lower-left and upper-right coordinates to specify a square focus region
-    check_regions = [[[2, 2], [8, 8]],
-                    [[-1, -6], [5, 0]],
-                    [[4.5, 2], [10.5, 8]],
-                    [[4.5, 3], [10.5, 9]],
-                    [[4.5, 3], [10.5, 9]]]
+    check_regions = [[[0, 0], [20, 15]]]
     
     interval = int(interval_factor * fps)
     all_cases = []
@@ -123,7 +127,7 @@ if __name__ == "__main__":
         count = 0
         
         # generate test case
-        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 20):
+        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 5):
             region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2,
                                     (region[0][1] + region[1][1]) / 2])
             st_pt = np.array(st_ed[0])
@@ -159,7 +163,8 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "test.json"), "w") as fp:
+    # with open(os.path.join("data", "synthetic_train2.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_test2.json"), "w") as fp:
         json.dump(all_cases, fp)
     
     
