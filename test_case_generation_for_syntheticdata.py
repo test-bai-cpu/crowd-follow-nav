@@ -70,9 +70,9 @@ def get_args():
 
 if __name__ == "__main__":
     # for generating train
-    # np.random.seed(42)
+    np.random.seed(42)
     # for generating test
-    np.random.seed(20)
+    # np.random.seed(20)
     
     
     args = get_args()
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     time_limit_factor = args.time_factor
     interval_factor = args.interval_factor
 
-    check_start_radius = 0.5
+    check_start_radius = 1.0
 
     # lower-left and upper-right coordinates to specify a square focus region
     check_regions = [[[0, 0], [20, 15]],
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         count = 0
         
         # generate test case
-        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 5):
+        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 1):
             region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2,
                                     (region[0][1] + region[1][1]) / 2])
             st_pt = np.array(st_ed[0])
@@ -158,8 +158,8 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    # with open(os.path.join("data", "synthetic_train.json"), "w") as fp:
-    with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_train.json"), "w") as fp:
+    # with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
         json.dump(all_cases, fp)
     
     

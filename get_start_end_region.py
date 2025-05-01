@@ -53,15 +53,24 @@ def get_start_end_loc(start_region_list, goal_region_list, sample_num=1):
 
         
         for _ in range(sample_num):
-            # Sample from start region
-            start_x = np.random.uniform(start_region[0][0], start_region[1][0])
-            start_y = np.random.uniform(start_region[0][1], start_region[1][1])
-            start_point = [start_x, start_y]
+            if sample_num == 1:
+                start_x = (start_region[0][0] + start_region[1][0]) / 2
+                start_y = (start_region[0][1] + start_region[1][1]) / 2
+                start_point = [start_x, start_y]
+                goal_x = (goal_region[0][0] + goal_region[1][0]) / 2
+                goal_y = (goal_region[0][1] + goal_region[1][1]) / 2
+                goal_point = [goal_x, goal_y]
 
-            # Sample from goal region
-            goal_x = np.random.uniform(goal_region[0][0], goal_region[1][0])
-            goal_y = np.random.uniform(goal_region[0][1], goal_region[1][1])
-            goal_point = [goal_x, goal_y]
+            else:
+                # Sample from start region
+                start_x = np.random.uniform(start_region[0][0], start_region[1][0])
+                start_y = np.random.uniform(start_region[0][1], start_region[1][1])
+                start_point = [start_x, start_y]
+
+                # Sample from goal region
+                goal_x = np.random.uniform(goal_region[0][0], goal_region[1][0])
+                goal_y = np.random.uniform(goal_region[0][1], goal_region[1][1])
+                goal_point = [goal_x, goal_y]
 
             start_end_loc_list.append([start_point, goal_point])
 
