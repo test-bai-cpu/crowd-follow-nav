@@ -45,6 +45,12 @@ python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobo
 python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_noreward --dset-file datasets_syn.yaml ### for using traj_1
 python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_noreward2 --dset-file datasets_syn.yaml ### for using traj_2
 
+### Found something wrong last time when generating synthetic test cases, the start_goal position is wrong. This time
+### we correct it and add the vertical ones as well. So train on both horizontal and vertical ones.
+### And change the collision threshold from 0.1 to 0.5
+python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 1
+python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 5
+python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 0, no group reward
 
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
@@ -64,9 +70,9 @@ python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcS
 python3 main_eval.py --group --record --react --animate --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1200000 ### For 
 
 #### For quantitative evaluation
-python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000 ### For 
-python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward --rl_model_weight n_samples_1200000 ### For 
-python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost --rl_model_weight n_samples_1000000 ### For 
+python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward_fw5 --rl_model_weight n_samples_1300000 ###  
+python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rlReward --rl_model_weight n_samples_1200000 ### 
+python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost --rl_model_weight n_samples_1000000 ### 
 
 
 # python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_1_react_sfmnorobot --rl_model_weight n_samples_0500000 --output-dir exps/results_time/e007_rw100_1_1_react_sfmnorobot
@@ -80,6 +86,10 @@ python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_
 python3 main_eval.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward2 --dset-file datasets_syn.yaml
 python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml ### for using traj_2
 
+
+### Run baselines
+# 1.for only use MPC and linear predictor
+python3 main_eval_mpc.py --group --record --react --exp_name e009_mpc_linear --dset-file datasets_syn.yaml
 
 
 results/e002_10human_rlB256UTD1LD32_mpccost_FollowRangeFix/n_samples_1500000

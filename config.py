@@ -53,7 +53,7 @@ def get_args():
     parser.add_argument(
         "--collision_radius",
         type=float,
-        default=0.1,
+        default=0.5,
         help="in navigation smaller than this means collision"
     )
 

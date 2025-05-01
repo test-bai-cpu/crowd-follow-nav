@@ -68,12 +68,6 @@ def get_args():
     return args
 
 
-def get_start_end_pos():
-    return
-
-
-
-
 if __name__ == "__main__":
     # for generating train
     # np.random.seed(42)
@@ -85,9 +79,9 @@ if __name__ == "__main__":
     
     fps = 1 / args.dt
     
-    num_datasets = 1
-    datasets = ['synthetic']
-    dataset_idxes = [2]
+    num_datasets = 2
+    datasets = ['synthetic', 'synthetic']
+    dataset_idxes = [1,2]
     
 
     robot_speed = args.robot_speed
@@ -95,10 +89,11 @@ if __name__ == "__main__":
     time_limit_factor = args.time_factor
     interval_factor = args.interval_factor
 
-    check_start_radius = 1
+    check_start_radius = 0.5
 
     # lower-left and upper-right coordinates to specify a square focus region
-    check_regions = [[[0, 0], [20, 15]]]
+    check_regions = [[[0, 0], [20, 15]],
+                    [[0, 0], [15, 20]]]
     
     interval = int(interval_factor * fps)
     all_cases = []
@@ -163,8 +158,8 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    # with open(os.path.join("data", "synthetic_train2.json"), "w") as fp:
-    with open(os.path.join("data", "synthetic_test2.json"), "w") as fp:
+    # with open(os.path.join("data", "synthetic_train.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
         json.dump(all_cases, fp)
     
     
