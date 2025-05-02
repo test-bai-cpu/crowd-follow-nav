@@ -49,10 +49,14 @@ python3 main.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobo
 ### we correct it and add the vertical ones as well. So train on both horizontal and vertical ones.
 ### And change the collision threshold from 0.1 to 0.5
 python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 1
+python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot_c0.5 --dset-file datasets_syn.yaml # group reward is 1
 python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 5
 python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5 --dset-file datasets_syn.yaml # group reward is 5, for change the collision threshold back to 0.5
 python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot --dset-file datasets_syn.yaml # group reward is 0, no group reward
 
+python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
+python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
+python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 

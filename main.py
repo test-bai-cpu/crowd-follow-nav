@@ -100,7 +100,8 @@ if __name__ == "__main__":
     # data_file = "ucy_2"
     # data_file = "eth_0"
     # data_file = "all"
-    data_file = "synthetic_train"
+    # data_file = "synthetic_train"
+    data_file = "synthetic_1"
     # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)

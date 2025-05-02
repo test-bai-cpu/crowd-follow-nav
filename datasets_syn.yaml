@@ -1,7 +1,5 @@
 ---
 datasets:
  - synthetic
- - synthetic
 flags:
  - 1
- - 2
