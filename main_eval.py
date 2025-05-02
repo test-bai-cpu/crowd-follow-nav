@@ -101,7 +101,8 @@ if __name__ == "__main__":
     # data_file = "eth_0"
     # data_file = "test"
     # data_file = "all_origin"
-    data_file = "synthetic_test2"
+    # data_file = "synthetic_test2"
+    data_file = "synthetic_1"
     # data_file = "synthetic_train2"
     # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
@@ -159,7 +160,9 @@ if __name__ == "__main__":
     # time_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Time']['case_id'].tolist()
     #################################################################################
     
-    for case_id in sim.case_id_list:
+    random_case_id = random.choice(sim.case_id_list)
+    # for case_id in sim.case_id_list:
+    for case_id in [random_case_id]:
     # for case_id in [130]:
     # for case_id in collision_fail_case_ids:
         # case_id = random.choice(sim.case_id_list)

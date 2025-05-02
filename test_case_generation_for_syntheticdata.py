@@ -79,9 +79,11 @@ if __name__ == "__main__":
     
     fps = 1 / args.dt
     
-    num_datasets = 2
-    datasets = ['synthetic', 'synthetic']
-    dataset_idxes = [1,2]
+    num_datasets = 1
+    # datasets = ['synthetic', 'synthetic']
+    datasets = ['synthetic']
+    # dataset_idxes = [1,2]
+    dataset_idxes = [1]
     
 
     robot_speed = args.robot_speed
@@ -122,7 +124,7 @@ if __name__ == "__main__":
         count = 0
         
         # generate test case
-        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 1):
+        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 5):
             region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2,
                                     (region[0][1] + region[1][1]) / 2])
             st_pt = np.array(st_ed[0])
@@ -158,7 +160,7 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "synthetic_train.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_train3.json"), "w") as fp:
     # with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
         json.dump(all_cases, fp)
     

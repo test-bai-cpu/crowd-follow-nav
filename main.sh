@@ -57,6 +57,7 @@ python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobo
 python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
 python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
 python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
+python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h_test --dset-file datasets_syn.yaml # only train on horizontal flows
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
@@ -91,6 +92,9 @@ python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_
 python3 main_eval.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward2 --dset-file datasets_syn.yaml
 python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml ### for using traj_2
 
+
+### For plotting images
+python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/check_imgs --dset-file datasets_syn.yaml
 
 ### Run baselines
 # 1.for only use MPC and linear predictor

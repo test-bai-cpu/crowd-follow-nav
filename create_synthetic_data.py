@@ -72,7 +72,7 @@ def generate_synthetic_data():
     # Simulate data, forming into a synthetic dataset
 
     fps = 10
-    frames_per_group_base = 50  
+    frames_per_group_base = 100
     n_groups = 200  # pairs of groups
     goal_right = 20
     goal_left = 0
