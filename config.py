@@ -247,6 +247,13 @@ def get_args():
         default=0.9,
         help="discount factor for cost estimation"
     )
+    
+    parser.add_argument(
+        "--follow-weight",
+        type=float,
+        default=1,
+        help="reward weight for following the group"
+    )
 
     try:
         args = parser.parse_args()

@@ -91,6 +91,8 @@ class Simulator(object):
             self.logger.info("Future steps: {}".format(self.future_steps))
 
         self.done = False
+        
+        self.follow_weight = args.follow_weight
 
         self._load_cases(case_fpath)
         self.reset_cases()
@@ -802,7 +804,7 @@ class Simulator(object):
 
         reward += 100 * reach_goal_reward
         reward += 1 * reach_goal_reward_dense
-        reward += 1 * group_matching_reward
+        reward += self.follow_weight * group_matching_reward
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,
