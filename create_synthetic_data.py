@@ -4,7 +4,8 @@ import os
 
 
 def spawn_group(center_x, center_y, vx_mean, vy_mean, start_frame, direction, goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter):
-    group_size = np.random.randint(5, 11)  # 5 to 10 people
+    # group_size = np.random.randint(5, 11)  # 5 to 10 people
+    group_size = np.random.randint(2, 6)  # 2 to 5 people
     
     trajectories = []
     
@@ -38,7 +39,8 @@ def spawn_group_vertical(center_x, center_y, vx_mean, vy_mean, start_frame, dire
     ### goal right is goal up
     ### goal left is goal down
     
-    group_size = np.random.randint(5, 11)  # 5 to 10 people
+    group_size = np.random.randint(2, 6)  # 2 to 5 people
+    # group_size = np.random.randint(5, 11)  # 5 to 10 people
     
     trajectories = []
     
@@ -72,8 +74,8 @@ def generate_synthetic_data():
     # Simulate data, forming into a synthetic dataset
 
     fps = 10
-    frames_per_group_base = 100
-    n_groups = 200  # pairs of groups
+    frames_per_group_base = 50
+    n_groups = 100  # pairs of groups
     goal_right = 20
     goal_left = 0
     start_area_size = 5  # 5x5 square
@@ -114,6 +116,6 @@ def generate_synthetic_data():
     data["frame_id"] = data["frame_id"].round().astype(int)
     data_folder = "sim/synthetic_data"
     os.makedirs(data_folder, exist_ok=True)
-    data.to_csv(f"{data_folder}/traj_1.csv", index=False)
+    data.to_csv(f"{data_folder}/traj_5.csv", index=False)
     
 generate_synthetic_data()

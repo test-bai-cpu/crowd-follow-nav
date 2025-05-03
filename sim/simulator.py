@@ -805,6 +805,7 @@ class Simulator(object):
         reward += 100 * reach_goal_reward
         reward += 1 * reach_goal_reward_dense
         reward += self.follow_weight * group_matching_reward
+        # print(self.follow_weight)
 
         info_dict = {
             "reach_goal_reward": reach_goal_reward,

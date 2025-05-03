@@ -57,8 +57,10 @@ python3 main_eval.py --group --record --react --exp_name e005_all_mpcSafeCost_rl
 # Copy logs from deepgear to my desktop
 scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/research/crowd-follow-nav/results/logs
 
-scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_0_react_sfmrobot_c0.5_h ~/research/crowd-follow-nav/results/logs
-scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_5_react_sfmrobot_c0.5_h ~/research/crowd-follow-nav/results/logs
+scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_0_react_sfmrobot_c0.5_h3 ~/research/crowd-follow-nav/results/logs
+scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_1_react_sfmrobot_c0.5_h3 ~/research/crowd-follow-nav/results/logs
+
+
 
 <!-- scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_5_react_sfmrobot ~/research/crowd-follow-nav/results/logs -->
 

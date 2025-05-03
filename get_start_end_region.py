@@ -24,17 +24,17 @@ def get_start_end_region(dataset, dataset_idx):
         start_region = [[[-1.5, -1], [1.5, 6]], [[14, -1], [16, 9]]]
         goal_region = [[[14, -1], [16, 9]], [[-1.5, -1], [1.5, 6]]]
         
-    elif dataset == 'synthetic' and dataset_idx in [1]: 
+    elif dataset == 'synthetic' and dataset_idx in [1,4,5]: 
         #(-5,5) to (25,5) || (25,10) to (-5,10)
         # start_region = [[[-6, 4], [-4, 6]], [[24, 9], [26, 11]]]
         # goal_region = [[[24, 4], [26, 6]], [[-6, 9], [-4, 11]]]
         
         #(-5,7.5) to (25,7.5) || (25,7.5) to (-5,7.5)
-        # start_region = [[[-6, 6.5], [-4, 8.5]], [[24, 6.5], [26, 8.5]]]
-        # goal_region = [[[24, 6.5], [26, 8.5]], [[-6, 6.5], [-4, 8.5]]]
+        start_region = [[[-6, 6.5], [-4, 8.5]], [[24, 6.5], [26, 8.5]]]
+        goal_region = [[[24, 6.5], [26, 8.5]], [[-6, 6.5], [-4, 8.5]]]
         
-        start_region = [[[-6, 4], [-4, 6]], [[24, 9], [26, 11]]]
-        goal_region = [[[24, 4], [26, 6]], [[-6, 9], [-4, 11]]]
+        # start_region = [[[-6, 4], [-4, 6]], [[24, 9], [26, 11]]]
+        # goal_region = [[[24, 4], [26, 6]], [[-6, 9], [-4, 11]]]
         
     elif dataset == 'synthetic' and dataset_idx in [2]: 
         #(7.5, -5) to (7.5, 25) || (7.5, 25) to (7.5, -5)

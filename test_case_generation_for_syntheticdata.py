@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # datasets = ['synthetic', 'synthetic']
     datasets = ['synthetic']
     # dataset_idxes = [1,2]
-    dataset_idxes = [1]
+    dataset_idxes = [5]
     
 
     robot_speed = args.robot_speed
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "synthetic_train3.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_train6.json"), "w") as fp:
     # with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
         json.dump(all_cases, fp)
     

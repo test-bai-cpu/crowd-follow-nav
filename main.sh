@@ -59,6 +59,16 @@ python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobo
 python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h --dset-file datasets_syn.yaml # only train on horizontal flows
 python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h_test --dset-file datasets_syn.yaml # only train on horizontal flows
 
+python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot_c0.5_h3 --dset-file datasets_syn.yaml --follow-weight 1 # use synthetic_train3.json
+python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.5_h3 --dset-file datasets_syn.yaml --follow-weight 5 # use synthetic_train3.json
+python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot_c0.5_h3 --dset-file datasets_syn.yaml --follow-weight 0 # use synthetic_train3.json
+
+python3 main.py --group --record --react --exp_name e010_rw100_1_1_react_sfmrobot_c0.1_h4 --dset-file datasets_syn.yaml --follow-weight 1 # use synthetic_train6.json
+python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.1_h4 --dset-file datasets_syn.yaml --follow-weight 5 # use synthetic_train6.json
+python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot_c0.1_h4 --dset-file datasets_syn.yaml --follow-weight 0 # use synthetic_train6.json
+
+
+
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
 python3 main_eval.py --group --record --react --animate --exp_name e001_10human_rlB256UTD1_fixSuccess --rl_model_weight n_samples_0300000
