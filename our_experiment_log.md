@@ -29,6 +29,13 @@
     - Generate traj_4.csv. Reduce group number from (5,11) to (2,6)
     - traj_5.csv: frames_per_group_base = 50 (100->50), n_groups = 100 (200 -> 100)
     - synthetic_train6.json, use traj_5.csv, but move start goal point from each flow to middle 7.5
+        - run experiments, results: the add reward weight 1 worse than no reward, worse than add reward 5.
+
+## Maj 4
+ - Create traj_6.csv, same setup as traj_5.csv, but with vertical flow only.
+ - Use both traj_5 and traj_6 to create synthetic_train7.json.
+ - Use synthetic_train7.json, to run a version, with reward 1,5,0.
+
 
 
 

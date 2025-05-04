@@ -92,21 +92,21 @@ def generate_synthetic_data():
         start_frame = group_idx * frames_per_group
         
         ################### The horizontal flow, to generate traj_1.csv ###################
-        # Group 1: From (0,5), rightward
-        person_id_counter, group_trajectories = spawn_group(0, 5, 0.9, 0, start_frame, 'right', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
-        trajectories.extend(group_trajectories)
-        # Group 2: From (20,10), leftward
-        person_id_counter, group_trajectories = spawn_group(20, 10, -0.9, 0, start_frame, 'left', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
-        trajectories.extend(group_trajectories)
+        # # Group 1: From (0,5), rightward
+        # person_id_counter, group_trajectories = spawn_group(0, 5, 0.9, 0, start_frame, 'right', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
+        # trajectories.extend(group_trajectories)
+        # # Group 2: From (20,10), leftward
+        # person_id_counter, group_trajectories = spawn_group(20, 10, -0.9, 0, start_frame, 'left', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
+        # trajectories.extend(group_trajectories)
         ############################################################
         
         ################### The vertical flow, to generate traj_2.csv ###################
-        # # Group 1: From (0,5), rightward
-        # person_id_counter, group_trajectories = spawn_group_vertical(5, 0, 0, 0.9, start_frame, 'up', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
-        # trajectories.extend(group_trajectories)
-        # # Group 2: From (20,10), leftward
-        # person_id_counter, group_trajectories = spawn_group_vertical(10, 20, 0, -0.9, start_frame, 'down', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
-        # trajectories.extend(group_trajectories)
+        # Group 1: From (0,5), rightward
+        person_id_counter, group_trajectories = spawn_group_vertical(5, 0, 0, 0.9, start_frame, 'up', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
+        trajectories.extend(group_trajectories)
+        # Group 2: From (20,10), leftward
+        person_id_counter, group_trajectories = spawn_group_vertical(10, 20, 0, -0.9, start_frame, 'down', goal_right, goal_left, start_area_size, noise_v, duration_frames, fps, person_id_counter)
+        trajectories.extend(group_trajectories)
         ############################################################
         
         
@@ -116,6 +116,6 @@ def generate_synthetic_data():
     data["frame_id"] = data["frame_id"].round().astype(int)
     data_folder = "sim/synthetic_data"
     os.makedirs(data_folder, exist_ok=True)
-    data.to_csv(f"{data_folder}/traj_5.csv", index=False)
+    data.to_csv(f"{data_folder}/traj_6.csv", index=False)
     
 generate_synthetic_data()
