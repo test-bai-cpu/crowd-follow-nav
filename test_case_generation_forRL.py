@@ -75,6 +75,12 @@ def get_start_end_pos():
 
 
 if __name__ == "__main__":
+
+    # for generating train
+    np.random.seed(42)
+    # for generating test
+    # np.random.seed(20)
+    
     args = get_args()
     
     fps = 1 / args.dt
@@ -123,7 +129,7 @@ if __name__ == "__main__":
         count = 0
         
         # generate test case
-        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 20):
+        for st_ed in get_start_end_loc_with_dataset(datasets[i], dataset_idxes[i], 7):
             region_mid_pt = np.array([(region[0][0] + region[1][0]) / 2,
                                     (region[0][1] + region[1][1]) / 2])
             st_pt = np.array(st_ed[0])
@@ -159,7 +165,8 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "test.json"), "w") as fp:
+    # with open(os.path.join("data", "test.json"), "w") as fp:
+    with open(os.path.join("data", "all_v2.json"), "w") as fp:
         json.dump(all_cases, fp)
     
     

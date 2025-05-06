@@ -81,15 +81,28 @@ files = [
     # "exps/results/evas/test_e007_rw100_1_1_react_sfmnorobot.csv"
     # "exps/183/all_origin_e007_rw100_1_1_react_sfmnorobot_noreward.csv",
     # "exps/183/all_origin_e007_rw100_1_1_react_sfmnorobot.csv"
-    "exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward2/evas/synthetic_test2_e008_rw100_1_1_react_sfmrobot_reward2.csv",
-    "exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_noreward2/evas/synthetic_test2_e008_rw100_1_1_react_sfmrobot_noreward2.csv",
-    "exps/results_synthetic/synthetic_test2_e009_mpc_linear.csv"
+    # "exps/results/evas/synthetic_train2_e008_rw100_1_1_react_sfmrobot_reward2.csv",
+    # "exps/results/evas/synthetic_train2_e008_rw100_1_1_react_sfmrobot_noreward2.csv",
+    # "exps/results/evas/synthetic_train2_e008_rw100_1_1_react_sfmrobot_reward2_w5.csv"
+    # "exps/results_synthetic/synthetic_test2_e009_mpc_linear.csv"
+    # "exps/results/evas/synthetic_train3_e010_rw100_1_0_react_sfmrobot_c0.5_h3.csv",
+    # "exps/results/evas/synthetic_train3_e010_rw100_1_1_react_sfmrobot_c0.5_h3.csv",
+    # "exps/results/evas/synthetic_train3_e010_rw100_1_5_react_sfmrobot_c0.5_h3.csv"
+    
+    # "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h5.csv",
+    # "exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv",
+    # "exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv",
+    # "exps/results/evas/test_e005_all_mpcSafeCost.csv"
+    
+    "exps/results_ethucy/e010_rw100_1_0_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_0_react_sfmrobot_c0.1_h5.csv",
+    "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h4/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h4.csv",
+    "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h5.csv"
 ]
 
 all_results = [get_results(f) for f in files]
 
 results_df = pd.DataFrame(all_results)
-results_df.to_csv("exps/results_synthetic/summary_results.csv", index=False)
+results_df.to_csv("exps/results_ethucy/summary_results_eth_3.csv", index=False)
 
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv")
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv")

@@ -72,6 +72,12 @@ python3 main.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobo
 python3 main.py --group --record --react --exp_name e010_rw100_1_0_react_sfmrobot_c0.1_h5 --dset-file datasets_syn.yaml --follow-weight 0 # use synthetic_train6.json
 
 
+### Start to use both synthetic and eth ucy data for training.
+python3 main.py --group --record --react --exp_name e011_rw100_1_0_react_sfmrobot_c0.5_h6 --dset-file datasets_all.yaml --follow-weight 0 --collision-radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_1_react_sfmrobot_c0.5_h6 --dset-file datasets_all.yaml --follow-weight 1 --collision-radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6 --dset-file datasets_all.yaml --follow-weight 5 --collision-radius 0.5 # use all_v2.json
+
+
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
@@ -105,6 +111,12 @@ python3 main_eval.py --group --record --react --animate --exp_name e007_rw100_1_
 python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml
 python3 main_eval.py --group --record --react --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward2 --dset-file datasets_syn.yaml
 python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0500000 --output-dir exps/results_synthetic/e008_rw100_1_1_react_sfmrobot_reward --dset-file datasets_syn.yaml ### for using traj_2
+
+## Test1 
+python3 main_eval.py --group --record --react --animate --exp_name e010_rw100_1_1_react_sfmrobot_c0.1_h5 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/e010_rw100_1_1_react_sfmrobot_c0.1_h5 --dset-file datasets_syn.yaml --follow-weight 1
+python3 main_eval.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.1_h5 --rl_model_weight n_samples_0100000 --output-dir exps/results_ethucy/e010_rw100_1_1_react_sfmrobot_c0.1_h5 --dset-file datasets.yaml --follow-weight 5
+python3 main_eval.py --group --record --react --exp_name e010_rw100_1_5_react_sfmrobot_c0.1_h4 --rl_model_weight n_samples_0100000 --output-dir exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h4 --dset-file datasets.yaml --follow-weight 5
+
 
 
 ### For plotting images

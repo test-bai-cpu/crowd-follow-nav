@@ -34,10 +34,43 @@
 ## Maj 4
  - Create traj_6.csv, same setup as traj_5.csv, but with vertical flow only.
  - Use both traj_5 and traj_6 to create synthetic_train7.json.
- - Use synthetic_train7.json, to run a version, with reward 1,5,0.
+ - Use synthetic_train7.json, to run a version, with reward 1,5,0. Train version h5
+   - The results shows the training curve does not look so good. But it is okay. we have good traning curve for other setups. 
+  
+## Maj 5
+ - Use train version h5, to test on the eth/ucy data. It is quite okay. Have similar performance as others, even not train on eth/ucy data. Can combine with eth and ucy data to train together. Maybe performance can improve
+
+Running: 
+ - Try to only use the model train on the horizontal data, to test on the eth/ucy data. to see how bad it is, for curious. **exp_name**: e010_rw100_1_5_react_sfmrobot_c0.1_h4
+
+TODO: 
+ - Increase the safety threshold from 0.1 to 0.5, retrain the model. 
+
+## Maj 6
+ - As the results in "exps/results_ethucy/summary_results_eth_3.csv", the h4 version, which trained only on horital data, perform bad in eth ucy. But h5 version, which trained on both horizontal and vertical data, behave okay. Although the not use reward function performs better than reward 5 version.
+ - So in the final train data, need to include both synthetic data and eth ucy data. threhold 0.5. 
+ - Create a final train data
+   - Create a all_v2.json, include test_case_generation_forRL.py, set sample 7 start and goal points, to make total line is around 41000, 2958 cases, which has similar length as synthetic_train7.json.
+   - copy and paste the ones in synthetic_train7.json to all_v2.json. And use all_v2.json for train.
+ - Can run, todo:
+   - Exp: run it, set reward to 0,1,5,10. Set collision from 0.1 to 0.5. 
+     - Potential issues: 
+     - The diff is not quite obvious, may chance start and goal position in the synthetic dataset
+     - 
 
 
+## Discussion Maj 6
+ - In chaos case, FRP happens with baseline, 
+ - Baseline: 
+   - SARL
+   - SARL + group reward
+   - MPC
+   - MPC + group cost
+   - Follow is all you need paper
+   - GO-MPC
 
+ - Evaluation:
+   - 
 
 # Ideas wait to be tested
  - In the group-follow-score, should we add the distance to group also? Like to increase reward, need to decrease the distance between robot and crowd
