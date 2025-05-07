@@ -14,7 +14,6 @@ class GroupLinearMPC(BaseMPC):
         self.w_safe = mpc_config.getfloat('mpc_env', 'w_safe')
         self.w_follow = mpc_config.getfloat('mpc_env', 'w_follow')
         self.w_smooth = mpc_config.getfloat('mpc_env', 'w_smooth')
-        self.d_safe = mpc_config.getfloat('mpc_env', 'd_safe')
         
         self.has_ped = False
         
@@ -101,7 +100,8 @@ class GroupLinearMPC(BaseMPC):
         gamma = self.gamma
         discount = 1
         for i, d in enumerate(dists):
-            cost += np.exp(self.d_safe - d) * discount
+            cost += np.exp(self.collision_radius - d) * discount
+            # print("check collision radius: ",self.collision_radius)
             discount *= gamma
         return cost
 

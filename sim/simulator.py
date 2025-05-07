@@ -723,8 +723,8 @@ class Simulator(object):
                     if current_pedestrians_idx[i] not in self.history_idxes:
                         #### if human appear location is too close to robot, dont add ####
                         appear_distance = np.linalg.norm(old_robot_pos - self.env.video_position_matrix[self.time][i])
-                        # if appear_distance < self.collision_radius + 1e-2:
-                        if appear_distance < 0.2:
+                        if appear_distance < self.collision_radius + 1e-2:
+                        # if appear_distance < 0.2:
                             continue
                         
                         self.history_idxes.append(current_pedestrians_idx[i])
@@ -832,9 +832,9 @@ class Simulator(object):
             distances = np.linalg.norm(positions - self.robot_pos, axis=1)
             distance_to_group = np.min(distances)
 
-            if distance_to_group > 1.5:
-                group_scores[label] = 0
-                continue
+            # if distance_to_group > 3:
+            #     group_scores[label] = 0
+            #     continue
 
             velocities = np.array([m[1] for m in members])
             speed = np.linalg.norm(velocities, axis=1)
@@ -850,7 +850,10 @@ class Simulator(object):
 
             speed_score = np.exp(- (speed_diff / sigma_speed) ** 2)
             angle_score = np.exp(- (angle_diff / sigma_angle) ** 2)
-            group_scores[label] = speed_score * angle_score
+            
+            distance_score = np.exp(- (distance_to_group) ** 2)
+            
+            group_scores[label] = speed_score * angle_score * distance_score
 
         # max_group_score = max(group_scores.values())
         self.max_label, max_group_score = max(group_scores.items(), key=lambda item: item[1])

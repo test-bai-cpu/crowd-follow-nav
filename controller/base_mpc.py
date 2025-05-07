@@ -16,6 +16,9 @@ class BaseMPC(ABC):
 
         # MPC parameters
 
+        self.collision_radius = args.collision_radius
+        self.dt = args.dt
+
         self.laser = args.laser
         self.differential = args.differential
 
@@ -63,9 +66,6 @@ class BaseMPC(ABC):
         # logging.info('[MPCEnv] Config {:} = {:}'.format('max_rot', self.max_rot))
         # logging.info('[MPCEnv] Config {:} = {:}'.format('max_l_acc', self.max_l_acc))
         # logging.info('[MPCEnv] Config {:} = {:}'.format('max_l_dcc', self.max_l_dcc))
-
-        self.dt = config.getfloat('mpc_env', 'dt')
-
 
     ## action should be v, w. 
     def generate_rollouts(self):

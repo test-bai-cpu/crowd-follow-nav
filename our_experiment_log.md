@@ -52,11 +52,11 @@ TODO:
  - Create a final train data
    - Create a all_v2.json, include test_case_generation_forRL.py, set sample 7 start and goal points, to make total line is around 41000, 2958 cases, which has similar length as synthetic_train7.json.
    - copy and paste the ones in synthetic_train7.json to all_v2.json. And use all_v2.json for train.
- - Can run, todo:
-   - Exp: run it, set reward to 0,1,5,10. Set collision from 0.1 to 0.5. 
+ - Running
+   - Exp: run it, set reward to 0,1,5,(10). Set collision from 0.1 to 0.5. 
      - Potential issues: 
-     - The diff is not quite obvious, may chance start and goal position in the synthetic dataset
-     - 
+       - The diff is not quite obvious, may chance start and goal position in the synthetic dataset
+       - Still have the problem of robot collide with new appear pedestrian? 
 
 
 ## Discussion Maj 6

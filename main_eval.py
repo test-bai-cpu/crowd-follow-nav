@@ -101,7 +101,8 @@ if __name__ == "__main__":
     # data_file = "eth_0"
     # data_file = "test"
     # data_file = "all_origin"
-    data_file = "test"
+    data_file = "all_v2"
+    # data_file = "test"
     # data_file = "synthetic_test2"
     # data_file = "synthetic_1"
     # data_file = "synthetic_train7"
@@ -164,6 +165,7 @@ if __name__ == "__main__":
     # random_case_id = random.choice(sim.case_id_list)
     # random_case_id = sim.case_id_list[0:10]
     for case_id in sim.case_id_list:
+    # for case_id in [5398]:
     # for case_id in random_case_id:
     # for case_id in [130]:
     # for case_id in collision_fail_case_ids:
