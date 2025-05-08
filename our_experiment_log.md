@@ -57,6 +57,13 @@ TODO:
      - Potential issues: 
        - The diff is not quite obvious, may chance start and goal position in the synthetic dataset
        - Still have the problem of robot collide with new appear pedestrian? 
+  
+## Maj 7
+ - Add distance in the RL reward group follow score computation.
+ - Try with the distance version, in deepgearc57 and desktop, with weight 0,1,5. 
+   - Cannot see much difference in the training process. Maybe should not combine two datasets in train and test. Maybe should separate, only eth/ucy in train/test, and only synthetic in train/test. And provide the train curve for both. But maybe current setting can have best performance.
+   - Good! The success rate is good, and the demos looks more smooth and make sense, follow group to goal. Before it is a little jumpy? like exceed the group and go curve, not it is more like slow down to wait for go together with group. It has the join behavious by add the distance, which meet the expectation.
+   - Bad! See some behaviours: cannot directly go to goal, but turn around a little and go to goal. If in the end the result for navigation time is not good enough, can look into this issue??? [TODO]
 
 
 ## Discussion Maj 6

@@ -80,6 +80,13 @@ python3 main.py --group --record --react --exp_name e011_rw100_1_5_react_sfmrobo
 ## Add the distance score
 python3 main.py --group --record --react --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6_distance --dset-file datasets_all.yaml --follow-weight 5 --collision_radius 0.5 # use all_v2.json
 
+## same code, go back to only train on eth/ucy
+python3 main.py --group --record --react --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h7_eth --dset-file datasets.yaml --follow-weight 5 --collision_radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_0_react_sfmrobot_c0.5_h7_eth --dset-file datasets.yaml --follow-weight 0 --collision_radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_1_react_sfmrobot_c0.5_h7_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_10_react_sfmrobot_c0.5_h7_eth --dset-file datasets.yaml --follow-weight 10 --collision_radius 0.5 # use all_v2.json
+python3 main.py --group --record --react --exp_name e011_rw100_1_20_react_sfmrobot_c0.5_h7_eth --dset-file datasets.yaml --follow-weight 20 --collision_radius 0.5 # use all_v2.json
+
 
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
@@ -121,7 +128,8 @@ python3 main_eval.py --group --record --react --exp_name e010_rw100_1_5_react_sf
 
 
 ### For both train on eth and synthetic:
-python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6 --rl_model_weight n_samples_0100000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h6 --dset-file datasets_all.yaml --follow-weight 5 --collision-radius 0.5 # use all_v2.json
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6 --rl_model_weight n_samples_0100000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h6 --dset-file datasets_all.yaml --follow-weight 5 --collision_radius 0.5 # use all_v2.json
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6_distance --rl_model_weight n_samples_0100000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h6_distance --dset-file datasets_all.yaml --follow-weight 5 --collision_radius 0.5 # use all_v2.json
 
 
 
