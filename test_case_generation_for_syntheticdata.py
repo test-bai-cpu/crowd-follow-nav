@@ -160,7 +160,8 @@ if __name__ == "__main__":
         with open(pfile_name, "w") as fp:
             json.dump(cases, fp)
     print("Total num cases: ", len(all_cases))
-    with open(os.path.join("data", "synthetic_train7.json"), "w") as fp:
+    # with open(os.path.join("data", "synthetic_train7.json"), "w") as fp:
+    with open(os.path.join("data", "synthetic_train8.json"), "w") as fp:
     # with open(os.path.join("data", "synthetic_test.json"), "w") as fp:
         json.dump(all_cases, fp)
     

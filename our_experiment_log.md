@@ -65,6 +65,13 @@ TODO:
    - Good! The success rate is good, and the demos looks more smooth and make sense, follow group to goal. Before it is a little jumpy? like exceed the group and go curve, not it is more like slow down to wait for go together with group. It has the join behavious by add the distance, which meet the expectation.
    - Bad! See some behaviours: cannot directly go to goal, but turn around a little and go to goal. If in the end the result for navigation time is not good enough, can look into this issue??? [TODO]
 
+## Maj 12
+ - Finished running using only the eth/ucy dataset. The result is weight 20 > weight 10 > weight 0. Stopped in all the machines.
+ - Start to run using the synthetic data.
+    - Create a synthetic_train8.json, which: compared to train7 version, change the start_end sample region, to move from side to middle, i.e. 7.5.
+    - 
+
+
 
 ## Discussion Maj 6
  - In chaos case, FRP happens with baseline, 

@@ -99,10 +99,11 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    data_file = "all"
+    # data_file = "all"
     # data_file = "synthetic_train"
     # data_file = "synthetic_1"
     # data_file = "synthetic_train7"
+    data_file = "synthetic_train8"
     # data_file = "all_v2"
     # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
