@@ -60,9 +60,11 @@ scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs ~/
 scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_0_react_sfmrobot_c0.1_h5 ~/research/crowd-follow-nav/results/logs
 
 
-scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_0_react_sfmrobot_c0.5_h6_distance ~/research/crowd-follow-nav/results/logs
-scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_1_react_sfmrobot_c0.5_h6_distance ~/research/crowd-follow-nav/results/logs
+scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_1_react_sfmrobot_c0.5_h7_eth ~/research/crowd-follow-nav/results/logs
+scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_5_react_sfmrobot_c0.5_h7_eth ~/research/crowd-follow-nav/results/logs
 
+scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_0_react_sfmrobot_c0.5_h7_eth ~/research/crowd-follow-nav/results/logs
+scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e011_rw100_1_20_react_sfmrobot_c0.5_h7_eth ~/research/crowd-follow-nav/results/logs
 
 
 <!-- scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/logs/e010_rw100_1_5_react_sfmrobot ~/research/crowd-follow-nav/results/logs -->

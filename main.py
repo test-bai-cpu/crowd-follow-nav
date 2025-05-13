@@ -103,7 +103,8 @@ if __name__ == "__main__":
     # data_file = "synthetic_train"
     # data_file = "synthetic_1"
     # data_file = "synthetic_train7"
-    data_file = "synthetic_train8"
+    # data_file = "synthetic_train8"
+    data_file = "synthetic_train9"
     # data_file = "all_v2"
     # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)

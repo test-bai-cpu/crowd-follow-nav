@@ -103,6 +103,18 @@ python3 main.py --group --record --react --exp_name e011_rw100_1_10_react_sfmrob
 python3 main.py --group --record --react --exp_name e011_rw100_1_50_react_sfmrobot_c0.5_h8_syn --dset-file datasets_syn.yaml --follow-weight 50 --collision_radius 0.5
 
 
+## same code, to try to run only on synthetic data now, use synthetic_train9.json
+#### In deepgearc
+python3 main.py --group --record --react --exp_name e011_rw100_1_1_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
+python3 main.py --group --record --react --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 5 --collision_radius 0.5
+#### In deepgeareast
+python3 main.py --group --record --react --exp_name e011_rw100_1_0_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 0 --collision_radius 0.5
+python3 main.py --group --record --react --exp_name e011_rw100_1_20_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 20 --collision_radius 0.5
+#### In desktop
+python3 main.py --group --record --react --exp_name e011_rw100_1_10_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 10 --collision_radius 0.5
+python3 main.py --group --record --react --exp_name e011_rw100_1_50_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 50 --collision_radius 0.5
+
+
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
 python3 main_eval.py --group --record --react --animate --exp_name e001_10human_rlB256UTD1_fixSuccess --rl_model_weight n_samples_0300000
