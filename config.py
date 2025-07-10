@@ -18,7 +18,7 @@ def get_args():
     parser.add_argument(
         "--dset-file",
         type=str,
-        default="datasets.yaml",
+        default="datasets_syn.yaml",
         help="file on which datasets to load"
     )
 

@@ -9,6 +9,7 @@ import time
 from config import get_args, check_args
 from sim.simulator import Simulator
 from sim.mpc.ped_nopred_mpc import PedNoPredMPC
+from controller.group_linear_mpc import GroupLinearMPC
 from controller.crowd_aware_MPC import CrowdAwareMPC
 from controller import mpc_utils
 from obs_data_parser import ObsDataParser
@@ -38,8 +39,9 @@ def preprocess_rl_obs(obs, current_state, robot_vx, robot_vy, goal_pos):
 
     goal_pos = np.array(goal_pos).reshape(1, -1)
     goal_pos = goal_pos - current_pos
+    goal_vx_vy = np.array([-robot_vx, -robot_vy]).reshape(1, -1)
     obs = obs.reshape(1, -1)
-    obs = np.concatenate([goal_pos, obs], axis=1)
+    obs = np.concatenate([goal_pos, goal_vx_vy, obs], axis=1)
     return obs
 
 #### -----------------------------------
@@ -71,6 +73,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=level, handlers=[stdout_handler, file_handler],
 						format='%(asctime)s, %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
     logger = logging.getLogger(__name__)
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+    logging.getLogger('numba').setLevel(logging.WARNING)
+    logging.getLogger('byteflow').setLevel(logging.WARNING)
 
     check_args(args, logger)
 
@@ -94,7 +99,14 @@ if __name__ == "__main__":
     # data_file = "ucy_1"
     # data_file = "ucy_2"
     # data_file = "eth_0"
-    data_file = "all"
+    # data_file = "all"
+    # data_file = "synthetic_train"
+    # data_file = "synthetic_1"
+    # data_file = "synthetic_train7"
+    # data_file = "synthetic_train8"
+    data_file = "synthetic_train9"
+    # data_file = "all_v2"
+    # data_file = "eth0_left_to_right"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -129,7 +141,6 @@ if __name__ == "__main__":
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
 
-
     # mpc_horizon = mpc_config.getint('mpc_env', 'mpc_horizon')
     # max_speed = mpc_config.getfloat('mpc_env', 'max_speed')
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
@@ -141,7 +152,12 @@ if __name__ == "__main__":
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
-        mpc = CrowdAwareMPC(mpc_config, args.use_a_omega, args.differential)
+        
+        ###### MPC initialization ######
+        # mpc = CrowdAwareMPC(mpc_config, args.use_a_omega, args.differential)
+        mpc = GroupLinearMPC(mpc_config, args, logger)
+        ################################
+        
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
@@ -151,39 +167,45 @@ if __name__ == "__main__":
 
             ############ RL model output the follow_pos ############
             rl_trainer.global_step += 1
+            rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
             if rl_trainer.is_learning_starts():
-                rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
                 rl_actions, _, entropies = rl_agent.get_action(torch.FloatTensor(rl_obs).to(device))
                 rl_actions = rl_actions.cpu().detach().numpy()
             else:
-                rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
+                # rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos)
                 rl_actions = rl_agent.random_actions()
 
             # Rescale actions. rl_actions is (1, 4): pos_x, pos_y, vel_x, vel_y, and they are all relative values to the robot, both pos and vel
             follow_pos = rl_actions[0, :2].copy()
-            follow_vel = rl_actions[0, 2:].copy()
+            # follow_vel = rl_actions[0, 2:].copy()
 
             ## Now rerange the follow_pos and follow_vel
-            follow_pos = follow_pos * max_follow_pos_delta   # Since max_follow_pos_delta > 0
+            # follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) / 2 - max_follow_pos_delta     # Since max_follow_pos_delta > 0
+            follow_pos = follow_pos * max_follow_pos_delta     # Since max_follow_pos_delta > 0
             # revert the relative pos to global pos
             follow_pos = follow_pos + current_state[:2]
 
-            follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
-            follow_vel = follow_vel + np.array([robot_vx, robot_vy])
+            # follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
+            # follow_vel = follow_vel + np.array([robot_vx, robot_vy])
 
-            follow_speed = np.linalg.norm(follow_vel)
-            follow_motion_angle = np.mod(np.arctan2(follow_vel[1], follow_vel[0]), 2 * np.pi)
+            # follow_speed = np.linalg.norm(follow_vel)
+            # follow_motion_angle = np.mod(np.arctan2(follow_vel[1], follow_vel[0]), 2 * np.pi)
 
-            follow_state = np.array([follow_pos[0], follow_pos[1], follow_speed, follow_motion_angle])
+            # follow_state = np.array([follow_pos[0], follow_pos[1], follow_speed, follow_motion_angle])
+            follow_state = np.array([follow_pos[0], follow_pos[1], 0, 0])
             follow_state = follow_state.reshape(1, -1)
             #########################################################
 
-            # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
-            action_mpc, _ = mpc.get_action(current_state, target, nearby_human_state, follow_state)
 
-            obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+            for mpc_steps_in_one_follow_state in range(10):
+                ###### MPC generate action ######
+                # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
+                action_mpc = mpc.get_action(obs, target, follow_state)
+                ################################
 
-            # print("time step: ", time_step)
+                obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+                if done == True:
+                    break
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
@@ -197,10 +219,14 @@ if __name__ == "__main__":
             rl_reward = np.array([reward])
             rl_done = np.array([done])
             rl_trainer.add_to_buffer(rl_obs, next_rl_obs, rl_actions, rl_reward, rl_done, [{}])
-            rl_trainer.update_episode_info(rl_reward, info_dict)
+            rl_trainer.update_episode_info(rl_reward)
+            if "reach_goal_reward" in info_dict:
+                rl_trainer.reporter["reach_goal_reward"].append(info_dict["reach_goal_reward"])
+                rl_trainer.reporter["reach_goal_reward_dense"].append(info_dict["reach_goal_reward_dense"])
+                rl_trainer.reporter["group_matching_reward"].append(info_dict["group_matching_reward"])
 
             if rl_done.any():
-                rl_infos = {"is_success": np.array([info])}   # info is a boolean value representing whether the robot reaches the target
+                rl_infos = {"is_success": np.array([info_dict["reach_goal_reward"] > 0])}   # info is a boolean value representing whether the robot reaches the target
                 rl_trainer.record_episode_info(rl_done, rl_infos)
 
             if rl_trainer.is_train_model():

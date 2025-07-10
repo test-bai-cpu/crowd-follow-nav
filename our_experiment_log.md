@@ -68,10 +68,12 @@ TODO:
 ## Maj 12
  - Finished running using only the eth/ucy dataset. The result is weight 20 > weight 10 > weight 0. Stopped in all the machines.
  - Start to run using the synthetic data.
-    - Create a synthetic_train8.json, which: compared to train7 version, change the start_end sample region, to move from side to middle, i.e. 7.5.
-    - 
+    - Create a synthetic_train8.json, which: compared to synthetic_train7 version, change the start_end sample region, to move from side to middle, i.e. 7.5. - exp version h8
+    - Create a synthetic_train9.json, which: compared to synthetic_train7 version, change the start_end sample region, to move from middle to side., should be same as train7 version. -  exp version h9
 
-
+## Maj 15
+  - checked exp h9 results. Think stop training for a while.
+  Now can used the train model for evaluation. And start to write the paper. And implement the baseline.
 
 ## Discussion Maj 6
  - In chaos case, FRP happens with baseline, 

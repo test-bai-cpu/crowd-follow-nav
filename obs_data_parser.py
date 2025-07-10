@@ -20,6 +20,7 @@ class ObsDataParser:
         self.group_target_threshold = config.getfloat('mpc_env', 'group_target_threshold')
         self.group_robot_threshold = config.getfloat('mpc_env', 'group_robot_threshold')
         self.group_vel_threshold = config.getfloat('mpc_env', 'group_vel_threshold')
+        self.max_human_distance = config.getfloat('mpc_env', 'max_human_distance')
 
     def get_robot_state(self, obs):
         robot_pos = obs['robot_pos']
@@ -40,21 +41,49 @@ class ObsDataParser:
 
     def get_human_state(self, obs):
         num_humans = obs["num_pedestrians"]
+        robot_pos = obs["robot_pos"]
+        human_pos = obs["pedestrians_pos"]
+        human_vel = obs["pedestrians_vel"]
 
-        if num_humans > self.max_humans:
-            # get the closest max_humans state to the robot
-            distances_to_humans = np.linalg.norm(obs["pedestrians_pos"] - obs["robot_pos"], axis=1)
-            sorted_indices = np.argsort(distances_to_humans)
-            nearby_human_pos = obs["pedestrians_pos"][sorted_indices[:self.max_humans]].copy()
-            nearby_human_vel = obs["pedestrians_vel"][sorted_indices[:self.max_humans]].copy()
-        else: ## padding to max_humans
+        if num_humans == 0:
             nearby_human_pos = np.full((self.max_humans, 2), 1e6)
             nearby_human_vel = np.full((self.max_humans, 2), 1e6)
-            if num_humans > 0:
-                pedestrians_pos = np.array(obs["pedestrians_pos"]).reshape(num_humans, 2)
-                pedestrians_vel = np.array(obs["pedestrians_vel"]).reshape(num_humans, 2)
-                nearby_human_pos[:num_humans] = obs["pedestrians_pos"].copy()
-                nearby_human_vel[:num_humans] = obs["pedestrians_vel"].copy()
+    
+        else:
+            distances_to_humans = np.linalg.norm(human_pos - robot_pos, axis=1)
+
+            # Filter by distance threshold
+            within_threshold = distances_to_humans < self.max_human_distance
+            filtered_pos = human_pos[within_threshold]
+            filtered_vel = human_vel[within_threshold]
+
+            num_filtered = filtered_pos.shape[0]
+            
+            if num_filtered > self.max_humans:
+                # get the closest max_humans state to the robot
+                sorted_indices = np.argsort(np.linalg.norm(filtered_pos - robot_pos, axis=1))
+                nearby_human_pos = filtered_pos[sorted_indices[:self.max_humans]]
+                nearby_human_vel = filtered_vel[sorted_indices[:self.max_humans]]
+            else:
+                # padding to max_humans
+                nearby_human_pos = np.full((self.max_humans, 2), 1e6)
+                nearby_human_vel = np.full((self.max_humans, 2), 1e6)
+                nearby_human_pos[:num_filtered] = filtered_pos
+                nearby_human_vel[:num_filtered] = filtered_vel
+
+            ############## previous version, when not filtering by distance threshold #####################
+            # if num_humans > self.max_humans:
+            #     # get the closest max_humans state to the robot
+            #     distances_to_humans = np.linalg.norm(human_pos - robot_pos, axis=1)
+            #     sorted_indices = np.argsort(distances_to_humans)
+            #     nearby_human_pos = human_pos[sorted_indices[:self.max_humans]].copy()
+            #     nearby_human_vel = human_vel[sorted_indices[:self.max_humans]].copy()
+            # else: ## padding to max_humans
+            #     nearby_human_pos = np.full((self.max_humans, 2), 1e6)
+            #     nearby_human_vel = np.full((self.max_humans, 2), 1e6)
+            #     nearby_human_pos[:num_humans] = human_pos.copy()
+            #     nearby_human_vel[:num_humans] = human_vel.copy()
+            ###############################################################################################
         
         nearby_human_state = np.concatenate((nearby_human_pos, nearby_human_vel), axis=1)
         

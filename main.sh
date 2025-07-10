@@ -159,6 +159,14 @@ python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_
 python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h6_distance --rl_model_weight n_samples_0100000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h6_distance --dset-file datasets_all.yaml --follow-weight 5 --collision_radius 0.5 # use all_v2.json
 
 
+### For only train on synthetic and test on synthetic:
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_1_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_1_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 5 --collision_radius 0.5
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_0_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_0_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 0 --collision_radius 0.5
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_20_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_20_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 20 --collision_radius 0.5
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_10_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_10_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 10 --collision_radius 0.5
+python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_50_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_50_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 50 --collision_radius 0.5
+
 
 ### For plotting images
 python3 main_eval.py --group --record --react --animate --exp_name e008_rw100_1_1_react_sfmrobot_reward2 --rl_model_weight n_samples_0100000 --output-dir exps/results_synthetic/check_imgs --dset-file datasets_syn.yaml
