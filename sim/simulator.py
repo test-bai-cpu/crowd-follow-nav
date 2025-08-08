@@ -65,7 +65,7 @@ class Simulator(object):
         # for crowd follow debugging
         self.follow_pos = None
         self.follow_vel = None
-        
+
         self.max_label = None
 
         self.pred_method = args.pred_method
@@ -91,7 +91,7 @@ class Simulator(object):
             self.logger.info("Future steps: {}".format(self.future_steps))
 
         self.done = False
-        
+
         self.follow_weight = args.follow_weight
 
         self._load_cases(case_fpath)
@@ -115,7 +115,7 @@ class Simulator(object):
         # shuffle the cases
 
         self.case_id_list = np.arange(len(self.case_list))
-        np.random.shuffle(self.case_id_list)
+        # np.random.shuffle(self.case_id_list)
         self.case_pt = 0
         return
 
@@ -405,10 +405,11 @@ class Simulator(object):
         self.goal_pos = case['end_pos']
         # self.start_pos = case['end_pos']
         # self.goal_pos = case['start_pos']
-        
-        
+
+
         self.start_frame = case['start_frame']
-        self.time_limit = self.start_frame + 3 * case['time_limit']
+        # self.time_limit = self.start_frame + 3 * case['time_limit']
+        self.time_limit = self.start_frame + 10 * case['time_limit']
 
         self.env = self.envs.select_env((self.env_name, self.env_flag))
         self._init_group_params()
@@ -420,6 +421,9 @@ class Simulator(object):
         self.robot_th = np.arctan2(self.goal_pos[1] - self.robot_pos[1], self.goal_pos[0] - self.robot_pos[0]) # robot heading orientation
         self.robot_vel = np.array([0, self.robot_th]) # robot_vel here means robot status (v, theta)
         self.robot_path = np.array([self.robot_pos])
+
+        # For saving the robot path and human path
+        self.save_all_traj = []
 
         # get the pedestrian properties
         self._update_from_dataset()
@@ -567,10 +571,10 @@ class Simulator(object):
 
         for idx, label in enumerate(group_labels):
             group_dict[label].append(idx)
-        
+
         if self.max_label is not None:
             group_dict[self.max_label].append(len(combined_data) - 1)
-            
+
         grouped_indices = list(group_dict.values())
         sfm_config_file = Path(__file__).resolve().parent.parent.joinpath("sfm_config.toml")
         sim = psf.Simulator(combined_data, groups=grouped_indices, obstacles=None, config_file=sfm_config_file)
@@ -594,12 +598,12 @@ class Simulator(object):
         ped_vel = np.array(ped_vel).reshape(-1, 2)  # Shape (num_pedestrians, 2) (vx,vy)
         ped_goals = np.array(ped_goals).reshape(-1, 2)  # Shape (num_pedestrians, 2) (gx,gy)
         ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
-        
+
         group_dict = defaultdict(list)
 
         for idx, label in enumerate(group_labels):
             group_dict[label].append(idx)
-            
+
         grouped_indices = list(group_dict.values())
         sfm_config_file = Path(__file__).resolve().parent.parent.joinpath("sfm_config.toml")
         sim = psf.Simulator(ped_data, groups=grouped_indices, obstacles=None, config_file=sfm_config_file)
@@ -627,6 +631,16 @@ class Simulator(object):
         return displacement
 
     def step(self, action, follow_state=None):
+
+        ##### save the robot path and human path #####
+        self.save_all_traj.append({
+            "time": self.time,
+            "robot_pos": self.robot_pos.copy(),
+            "pedestrians_pos": np.array(self.pedestrians_pos).copy(),
+            "pedestrians_vel": np.array(self.pedestrians_vel).copy()
+        })
+        ##############################################
+
         reward = 0
 
         if follow_state is not None:
@@ -726,7 +740,7 @@ class Simulator(object):
                         if appear_distance < self.collision_radius + 1e-2:
                         # if appear_distance < 0.2:
                             continue
-                        
+
                         self.history_idxes.append(current_pedestrians_idx[i])
                         new_pedestrians_idx.append(current_pedestrians_idx[i])
                         new_pedestrians_pos.append(self.env.video_position_matrix[self.time][i])
@@ -849,14 +863,14 @@ class Simulator(object):
 
             speed_score = np.exp(- (speed_diff / sigma_speed) ** 2)
             angle_score = np.exp(- (angle_diff / sigma_angle) ** 2)
-            
+
             distance_score = np.exp(- (distance_to_group) ** 2)
-            
+
             group_scores[label] = speed_score * angle_score * distance_score
 
         # max_group_score = max(group_scores.values())
         self.max_label, max_group_score = max(group_scores.items(), key=lambda item: item[1])
-        
+
         if max_group_score == 0:
             self.max_label = None
 
