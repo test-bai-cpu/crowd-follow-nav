@@ -91,9 +91,6 @@ if __name__ == "__main__":
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
-
-    max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
-                            mpc_config.getfloat('mpc_env', 'max_speed'))
     
     ######################### Get the test cases want to check ######################
     # fail_case_file = "exps/failed_cases_noreward.csv"
@@ -117,18 +114,7 @@ if __name__ == "__main__":
         time_step = 0
         while not done:
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
-            
-            ############ Use goal pos as the follow_pos ############
-            follow_state = np.array([sim.goal_pos[0], sim.goal_pos[1], 0.0, 0.0])
-            follow_state = follow_state.reshape(1, -1)
-            ########################################################
-
-            ############ use fixed way to generate a follow state ############
-            # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
-            ########################################################
-            
-            action_mpc = mpc.get_action(obs, target, follow_state)
-            obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+            obs, reward, done, info, time_step, info_dict = sim.step_only_orca()
 
         ################# save the robot path and human path #############################
         save_filename = f"{data_file}_{args.exp_name}.pkl"

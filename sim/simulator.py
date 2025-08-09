@@ -516,6 +516,53 @@ class Simulator(object):
 
         return ped_pos_new, ped_vel_new
 
+    def rvo_step_return_robot(self, robo_curr, ped_pos, ped_vel, ped_goals):
+        # robo_curr is the current robot position
+        # robo_goal is the robot goal position
+        # dt is the time step
+        # robo_max_v is the robot maximum velocity
+        # t_horizon is the time horizon
+        # ped_pos is the pedestrian positions
+        # ped_vel is the pedestrian velocities
+        # ped_goals is the pedestrian goals
+
+        robo_goal = np.array(self.goal_pos)
+        dt = self.dt
+        t_horizon = self.time_horizon
+        robo_max_v = self.robot_speed
+        # setting pedestrian max speed to robot max speed
+        ped_max_spd = robo_max_v
+
+        # initialize the simulator
+        # RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed)
+        sim = rvo2.PyRVOSimulator(dt, 2.5, 10, t_horizon, 2, 0.5, ped_max_spd)
+
+        # add the robot
+        robot = sim.addAgent((robo_curr[0], robo_curr[1]))
+        sim.setAgentMaxSpeed(robot, robo_max_v)
+        sim.setAgentPrefVelocity(robot, self._get_pref_velocity(robo_curr, robo_goal, robo_max_v))
+
+        # add the pedestrians
+        num_ped = len(ped_pos)
+        ped_list = []
+        for i in range(num_ped):
+            ped = sim.addAgent((ped_pos[i][0], ped_pos[i][1]))
+            ped_spd = np.linalg.norm(np.array(ped_vel[i]))
+            sim.setAgentVelocity(ped, (ped_vel[i][0], ped_vel[i][1]))
+            sim.setAgentMaxSpeed(ped, max(ped_spd, ped_max_spd))
+            sim.setAgentPrefVelocity(ped, self._get_pref_velocity(ped_pos[i], ped_goals[i], ped_max_spd))
+            ped_list.append(ped)
+
+        sim.doStep()
+
+        ped_pos_new = np.array([sim.getAgentPosition(ped) for ped in ped_list])
+        ped_vel_new = np.array([sim.getAgentVelocity(ped) for ped in ped_list])
+
+        robot_pos_new = sim.getAgentPosition(robot)
+        robot_vel_new = sim.getAgentVelocity(robot)
+
+        return ped_pos_new, ped_vel_new, robot_pos_new, robot_vel_new
+
     ####### Does not consider robot position affect to human movement simulation
     def rvo_step_norobot(self, ped_pos, ped_vel, ped_goals):
         # dt is the time step
@@ -553,11 +600,14 @@ class Simulator(object):
 
         return ped_pos_new, ped_vel_new
 
-    def sfm_step(self, old_robot_pos, old_robot_vx_vy, ped_pos, ped_vel, ped_goals, group_labels):
+    def sfm_step_return_robot(self, old_robot_pos, old_robot_vx_vy, ped_pos, ped_vel, ped_goals, group_labels):
         if len(ped_pos) == 0:  # Check if there are no pedestrians
             ped_pos_new = np.empty((0, 2))  # Shape (0, 2)
             ped_vel_new = np.empty((0, 2))  # Shape (0, 2)
-            return ped_pos_new, ped_vel_new
+            robot_pos_new = np.array([old_robot_pos[0] + old_robot_vx_vy[0] * self.dt,
+                                      old_robot_pos[1] + old_robot_vx_vy[1] * self.dt])
+            robot_vel_new = np.array(old_robot_vx_vy)  # (vx, vy)
+            return ped_pos_new, ped_vel_new, robot_pos_new, robot_vel_new
 
         ped_pos = np.array(ped_pos).reshape(-1, 2)  # Shape (num_pedestrians, 2) (px,py)
         ped_vel = np.array(ped_vel).reshape(-1, 2)  # Shape (num_pedestrians, 2) (vx,vy)
@@ -565,8 +615,7 @@ class Simulator(object):
         ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
         robot_data = np.array([old_robot_pos[0], old_robot_pos[1], old_robot_vx_vy[0], old_robot_vx_vy[1], self.goal_pos[0], self.goal_pos[1]]).reshape(1, -1)
 
-        # combined_data = np.vstack((ped_data, robot_data))
-        combined_data = ped_data.copy()
+        combined_data = np.vstack((ped_data, robot_data))
 
         group_dict = defaultdict(list)
 
@@ -583,10 +632,44 @@ class Simulator(object):
 
         ped_data_all_steps, _ = sim.get_states()
         ped_data_new = ped_data_all_steps[1]
-        # ped_pos_new = ped_data_new[:-1, :2]
-        # ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
-        ped_pos_new = ped_data_new[:, :2]
-        ped_vel_new = ped_data_new[:, 2:4] # (vx, vy)
+        ped_pos_new = ped_data_new[:-1, :2]
+        ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
+        robot_pos_new = ped_data_new[-1, :2]
+        robot_vel_new = ped_data_new[-1, 2:4]
+
+        return ped_pos_new, ped_vel_new, robot_pos_new, robot_vel_new
+
+    def sfm_step(self, old_robot_pos, old_robot_vx_vy, ped_pos, ped_vel, ped_goals, group_labels):
+        if len(ped_pos) == 0:  # Check if there are no pedestrians
+            ped_pos_new = np.empty((0, 2))  # Shape (0, 2)
+            ped_vel_new = np.empty((0, 2))  # Shape (0, 2)
+            return ped_pos_new, ped_vel_new
+
+        ped_pos = np.array(ped_pos).reshape(-1, 2)  # Shape (num_pedestrians, 2) (px,py)
+        ped_vel = np.array(ped_vel).reshape(-1, 2)  # Shape (num_pedestrians, 2) (vx,vy)
+        ped_goals = np.array(ped_goals).reshape(-1, 2)  # Shape (num_pedestrians, 2) (gx,gy)
+        ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
+        robot_data = np.array([old_robot_pos[0], old_robot_pos[1], old_robot_vx_vy[0], old_robot_vx_vy[1], self.goal_pos[0], self.goal_pos[1]]).reshape(1, -1)
+
+        combined_data = np.vstack((ped_data, robot_data))
+
+        group_dict = defaultdict(list)
+
+        for idx, label in enumerate(group_labels):
+            group_dict[label].append(idx)
+
+        if self.max_label is not None:
+            group_dict[self.max_label].append(len(combined_data) - 1)
+
+        grouped_indices = list(group_dict.values())
+        sfm_config_file = Path(__file__).resolve().parent.parent.joinpath("sfm_config.toml")
+        sim = psf.Simulator(combined_data, groups=grouped_indices, obstacles=None, config_file=sfm_config_file)
+        sim.step()
+
+        ped_data_all_steps, _ = sim.get_states()
+        ped_data_new = ped_data_all_steps[1]
+        ped_pos_new = ped_data_new[:-1, :2]
+        ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
 
         return ped_pos_new, ped_vel_new
 
@@ -704,10 +787,10 @@ class Simulator(object):
                 #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step_norobot(
                 #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
-                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
-                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
-                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
-                #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                    # old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
+                    self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward
@@ -763,6 +846,175 @@ class Simulator(object):
             else:
                 # use dataset to update pedestrian positions
                 self._update_from_dataset()
+
+        # TODO: check if success = False is correct. it was success = True but looks not correct.
+        success = False
+        reach_goal_reward = 0
+        self.done = False
+        self.num_ped = len(self.pedestrians_idx)
+
+        # check if the episode is done
+        if self.time >= self.time_limit:
+            self.done = True
+            self.fail_reason = "Time"
+            self.logger.info("Time limit exceeded. Terminating episode.")
+        elif (self.num_ped > 0) and (np.min(np.linalg.norm(self.robot_pos - np.array(self.pedestrians_pos), axis=1)) < self.collision_radius):
+            success = False
+            self.done = True
+            self.fail_reason = "Collision"
+            self.logger.info("Collision detected. Terminating episode.")
+        elif np.linalg.norm(self.robot_pos - self.goal_pos) < self.goal_radius:
+            reach_goal_reward = 1
+            success = True
+            self.done = True
+            self.logger.info("----------------Goal reached----------------")
+
+        if self.laser:
+            self._simulate_laser()
+
+        if self.group:
+            self._group_observations()
+
+        # update the observation
+        observation_dict = self._get_observation_dict(success)
+        if self.record:
+            record_dict = self._extract_observation(observation_dict)
+            self.obs_history.append(record_dict)
+
+        if self.animate:
+            frame = self.render()
+            self.image_sequences.append(frame)
+            ########### save the image to the output directory ##############
+            if self.time % 20 == 0:
+                tmp_fig = plt.figure()
+                tmp_ax = tmp_fig.add_subplot(111)
+                self.render_for_save(tmp_ax)
+                tmp_fig.savefig(f"{self.output_dir}/figs/{self.env_name}_{self.env_flag}/case_{self.case_id}/{self.time}.png")
+                plt.close(tmp_fig)
+            #################################################################
+            if self.done:
+                self._write_video()
+
+        # compute the reward
+        ## reward for reaching the goal with range: [-1, 1]
+        reach_goal_reward_dense = np.linalg.norm(old_robot_pos - self.goal_pos) - np.linalg.norm(self.robot_pos - self.goal_pos)
+        ## reward to getting closer to the goal with range: [0, 1]
+        group_matching_score = self.get_group_score(observation_dict)
+        group_matching_reward = group_matching_score
+
+        reward += 100 * reach_goal_reward
+        reward += 1 * reach_goal_reward_dense
+        reward += self.follow_weight * group_matching_reward
+
+        info_dict = {
+            "reach_goal_reward": reach_goal_reward,
+            "reach_goal_reward_dense": reach_goal_reward_dense,
+            "group_matching_reward": group_matching_reward,}
+
+        # return the observation, reward(not used), done, and info
+        return observation_dict, reward, self.done, success, self.time, info_dict
+
+    def step_only_orca(self):
+
+        ##### save the robot path and human path #####
+        self.save_all_traj.append({
+            "time": self.time,
+            "robot_pos": self.robot_pos.copy(),
+            "pedestrians_pos": np.array(self.pedestrians_pos).copy(),
+            "pedestrians_vel": np.array(self.pedestrians_vel).copy()
+        })
+        ##############################################
+
+        if self.done:
+            raise ValueError("Environment is done. Please reset.")
+
+        # update time
+        self.time += 1
+
+        # update robot position
+        old_robot_pos = self.robot_pos.copy()
+        old_robot_vx_vy = (self.robot_vel[0] * np.cos(self.robot_th), self.robot_vel[0] * np.sin(self.robot_th))
+
+        # update pedestrian positions
+        if self.time > self.env.total_num_frames:
+            # no more pedestrian data, so simulator is empty
+            self.pedestrians_pos = []
+            self.pedestrians_vel = []
+            self.pedestrians_idx = []
+            self.pedestrians_pos_history = []
+            self.pedestrians_vel_history = []
+            self.pedestrians_goal = []
+        else:
+            if self.react:
+                tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
+                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                    
+                # tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
+                    # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                    
+                tmp_pedestrians_idx = self.pedestrians_idx
+                if self.history:
+                    # update pedestrian history by rolling forward
+                    tmp_pedestrians_pos_history = []
+                    tmp_pedestrians_vel_history = []
+                    for i in range(len(self.pedestrians_pos_history)):
+                        tmp_pedestrians_pos_history.append(self.pedestrians_pos_history[i][1:] + self.pedestrians_pos[i])
+                        tmp_pedestrians_vel_history.append(self.pedestrians_vel_history[i][1:] + self.pedestrians_vel[i])
+
+                # remove pedestrians that have reached their goals
+                new_pedestrians_idx = []
+                new_pedestrians_pos = []
+                new_pedestrians_vel = []
+                new_pedestrians_pos_history = []
+                new_pedestrians_vel_history = []
+                new_pedestrians_goal = []
+                for i in range(len(tmp_pedestrians_pos)):
+                    if np.linalg.norm(tmp_pedestrians_pos[i] - self.pedestrians_goal[i]) > self.goal_radius:
+                        new_pedestrians_idx.append(tmp_pedestrians_idx[i])
+                        new_pedestrians_pos.append(tmp_pedestrians_pos[i])
+                        new_pedestrians_vel.append(tmp_pedestrians_vel[i])
+                        if self.history:
+                            new_pedestrians_pos_history.append(tmp_pedestrians_pos_history[i])
+                            new_pedestrians_vel_history.append(tmp_pedestrians_vel_history[i])
+                        new_pedestrians_goal.append(self.pedestrians_goal[i])
+
+                # add new pedestrians
+                current_pedestrians_idx = self.env.video_pedidx_matrix[self.time]
+                for i in range(len(current_pedestrians_idx)):
+                    if current_pedestrians_idx[i] not in self.history_idxes:
+                        #### if human appear location is too close to robot, dont add ####
+                        appear_distance = np.linalg.norm(old_robot_pos - self.env.video_position_matrix[self.time][i])
+                        if appear_distance < self.collision_radius + 0.5:
+                            continue
+
+                        self.history_idxes.append(current_pedestrians_idx[i])
+                        new_pedestrians_idx.append(current_pedestrians_idx[i])
+                        new_pedestrians_pos.append(self.env.video_position_matrix[self.time][i])
+                        new_pedestrians_vel.append(self.env.video_velocity_matrix[self.time][i])
+                        if self.history:
+                            pos_history, vel_history = self.dataset_history(current_pedestrians_idx[i])
+                            new_pedestrians_pos_history.append(pos_history)
+                            new_pedestrians_vel_history.append(vel_history)
+                        new_pedestrians_goal.append(self.env.people_coords_complete[current_pedestrians_idx[i]][-1])
+
+                # update the pedestrian properties
+                self.pedestrians_idx = new_pedestrians_idx
+                self.pedestrians_pos = new_pedestrians_pos
+                self.pedestrians_vel = new_pedestrians_vel
+                self.pedestrians_pos_history = new_pedestrians_pos_history
+                self.pedestrians_vel_history = new_pedestrians_vel_history
+                self.pedestrians_goal = new_pedestrians_goal
+            else:
+                # use dataset to update pedestrian positions
+                self._update_from_dataset()
+
+        self.robot_pos = new_robot_pos
+        new_robot_theta = np.arctan2(new_robot_vel[1], new_robot_vel[0])
+        new_robot_speed = np.linalg.norm(new_robot_vel)
+        self.robot_vel = np.array([new_robot_speed, new_robot_theta]) # set robot_vel to [v, theta]
+        self.robot_th = new_robot_theta
+
+        self.robot_path = np.append(self.robot_path, [self.robot_pos], axis=0)
 
         # TODO: check if success = False is correct. it was success = True but looks not correct.
         success = False

@@ -280,11 +280,11 @@ if __name__ == "__main__":
     args.record = True
     args.react = True
     # args.animate = True
-    args.exp_name = "e104_sarl_eth"
-    args.dset_file = "datasets_syn.yaml"
+    # args.exp_name = "e104_sarl_eth"
+    # args.dset_file = "datasets_syn.yaml"
     args.collision_radius = 0.5
-    args.output_dir = "exps/results_sarl_2"
-    save_memory = False
+    # args.output_dir = "exps/results_sarl_2"
+    save_memory = True
 
     set_random_seed(args.seed)
 
