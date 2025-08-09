@@ -124,6 +124,14 @@ python3 main.py --group --record --react --exp_name e013_rw100_1_0_react_sfmrobo
 python3 main.py --group --record --react --exp_name e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5
 python3 main.py --group --record --react --exp_name e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 5 --collision_radius 0.5
 
+python3 main_sarl_train2.py --group --record --react --exp_name e102_sarl_eth --dset-file datasets_syn.yaml --collision_radius 0.0 # test when not consider collision
+python3 main_sarl_train2.py --group --record --react --exp_name e104_sarl_syn --dset-file datasets_syn.yaml --collision_radius 0.5 --output-dir exps/results_sarl ## remove robot from sfm step
+
+
+python3 main_eval.py --group --record --react --exp_name e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_1000000 --output-dir exps/results_all/test --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
+
+python3 main_eval.py --group --record --react --exp_name e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/test --dset-file datasets.yaml --follow-weight 0 --collision_radius 0.5
+
 python3 main_paral.py --group --record --react --num_envs 4 --exp_name e001_10human_rlB256UTD1
 
 python3 main_eval.py --group --record --react --animate --exp_name e001_10human_rlB256UTD1_fixSuccess --rl_model_weight n_samples_0300000
@@ -182,6 +190,18 @@ python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_
 python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_1_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_1_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
 python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_5_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_5_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 5 --collision_radius 0.5
 python3 main_eval.py --group --record --react --animate --exp_name e011_rw100_1_10_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_0500000 --output-dir exps/results_all/e011_rw100_1_10_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 10 --collision_radius 0.5
+
+
+#### For evaluating the synthetic model
+python3 main_eval.py --group --record --react --exp_name e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 0 --collision_radius 0.5
+python3 main_eval.py --group --record --react --exp_name e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
+python3 main_eval.py --group --record --react --exp_name e012_rw100_1_5_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e012_rw100_1_5_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 5 --collision_radius 0.5
+
+
+#### For evaluating the eth/ucy model
+python3 main_eval.py --group --record --react --exp_name e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 0 --collision_radius 0.5
+python3 main_eval.py --group --record --react --exp_name e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5
+python3 main_eval.py --group --record --react --exp_name e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 5 --collision_radius 0.5
 
 
 ### For plotting images

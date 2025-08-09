@@ -6,6 +6,7 @@ import numpy as np
 import time
 import random
 import pandas as pd
+import pickle
 
 from config import get_args, check_args
 from sim.simulator import Simulator
@@ -96,17 +97,10 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    # data_file = "ucy_1"
-    # data_file = "ucy_2"
-    # data_file = "eth_0"
-    # data_file = "test"
-    # data_file = "all_origin"
-    data_file = "all_v2"
-    # data_file = "test"
-    # data_file = "synthetic_test2"
-    # data_file = "synthetic_1"
-    # data_file = "synthetic_train7"
-    # data_file = "eth0_left_to_right"
+    data_file = "synthetic_test"
+    # data_file = "eth_ucy_test"
+    # data_file = "eth_ucy_train"
+
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -135,25 +129,16 @@ if __name__ == "__main__":
         with_exploration = False
 
     train_info = {}
-    # max_follow_pos_delta = rl_config["max_follow_pos_delta"]
-
-    # tb_writer = SummaryWriter(f"{result_dir}/logs/{int(time.time())}")
     ########################################################################
-    # sim.case_id_list.sort()
-    np.random.shuffle(sim.case_id_list)
+    sim.case_id_list.sort()
+    # np.random.shuffle(sim.case_id_list)
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
 
-    # mpc_horizon = mpc_config.getint('mpc_env', 'mpc_horizon')
-    # max_speed = mpc_config.getfloat('mpc_env', 'max_speed')
+    # max_follow_pos_delta = rl_config["max_follow_pos_delta"]
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
-    
-    
-    # for case_id in [2835]:
-    # for case_id in [1068]:
-    # for _ in range(5):
     
     ######################### Get the test cases want to check ######################
     # fail_case_file = "exps/failed_cases_noreward.csv"
@@ -165,12 +150,12 @@ if __name__ == "__main__":
     # random_case_id = random.choice(sim.case_id_list)
     # random_case_id = sim.case_id_list[0:20]
     # for case_id in sim.case_id_list[0:20]:
-    for case_id in [2546, 4511, 2874]:
+    # for case_id in [2546, 4511, 2874]:
     # for case_id in random_case_id:
-    # for case_id in [130]:
     # for case_id in collision_fail_case_ids:
-        # case_id = random.choice(sim.case_id_list)
-        # case_id = 2065
+    
+    # for case_id in [2105]:
+    for case_id in sim.case_id_list:
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -186,9 +171,6 @@ if __name__ == "__main__":
             robot_vx = robot_speed * np.cos(robot_motion_angle)
             robot_vy = robot_speed * np.sin(robot_motion_angle)
             nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
-            # row1 = np.array([[1e6, 1e6, 1e6, 1e6]])
-            # nearby_human_state = np.tile(row1, (10, 1))
-
             
             ############ RL model output the follow_pos ############
             rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
@@ -223,9 +205,36 @@ if __name__ == "__main__":
             ############ use fixed way to generate a follow state ############
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
             ########################################################
-            
-            action_mpc = mpc.get_action(obs, target, follow_state)
-            obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+
+            for mpc_steps_in_one_follow_state in range(10):
+                ###### MPC generate action ######
+                # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
+                action_mpc = mpc.get_action(obs, target, follow_state)
+                # print(">>> in Training, action_mpc =", action_mpc)
+                ################################
+
+                obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+                if done == True:
+                    break
+
+        ################# save the robot path and human path #############################
+        save_filename = f"{data_file}_{args.exp_name}.pkl"
+        save_filepath = os.path.join(sim.output_dir, "evas", save_filename)
+        
+        existing_data = {}
+        if os.path.exists(save_filepath):
+            try:
+                with open(save_filepath, "rb") as f:
+                    existing_data = pickle.load(f)
+            except (pickle.UnpicklingError, EOFError):
+                existing_data = {}
+        
+        existing_data[case_id] = sim.save_all_traj.copy()
+        
+        with open(save_filepath, "wb") as f:
+            pickle.dump(existing_data, f)
+            logger.info(f"Case {case_id} trajectory appended to {save_filepath}")
+        #################################################################################
 
         ############## save the evaluation results to the csv file ##############
         result_dict = sim.evaluate(output=True)

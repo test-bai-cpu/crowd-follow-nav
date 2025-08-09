@@ -408,8 +408,8 @@ class Simulator(object):
 
 
         self.start_frame = case['start_frame']
-        # self.time_limit = self.start_frame + 3 * case['time_limit']
-        self.time_limit = self.start_frame + 10 * case['time_limit']
+        self.time_limit = self.start_frame + 3 * case['time_limit']
+        # self.time_limit = self.start_frame + 10 * case['time_limit']
 
         self.env = self.envs.select_env((self.env_name, self.env_flag))
         self._init_group_params()
@@ -565,7 +565,8 @@ class Simulator(object):
         ped_data = np.column_stack((ped_pos, ped_vel, ped_goals))
         robot_data = np.array([old_robot_pos[0], old_robot_pos[1], old_robot_vx_vy[0], old_robot_vx_vy[1], self.goal_pos[0], self.goal_pos[1]]).reshape(1, -1)
 
-        combined_data = np.vstack((ped_data, robot_data))
+        # combined_data = np.vstack((ped_data, robot_data))
+        combined_data = ped_data.copy()
 
         group_dict = defaultdict(list)
 
@@ -582,8 +583,10 @@ class Simulator(object):
 
         ped_data_all_steps, _ = sim.get_states()
         ped_data_new = ped_data_all_steps[1]
-        ped_pos_new = ped_data_new[:-1, :2]
-        ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
+        # ped_pos_new = ped_data_new[:-1, :2]
+        # ped_vel_new = ped_data_new[:-1, 2:4] # (vx, vy)
+        ped_pos_new = ped_data_new[:, :2]
+        ped_vel_new = ped_data_new[:, 2:4] # (vx, vy)
 
         return ped_pos_new, ped_vel_new
 
@@ -737,8 +740,7 @@ class Simulator(object):
                     if current_pedestrians_idx[i] not in self.history_idxes:
                         #### if human appear location is too close to robot, dont add ####
                         appear_distance = np.linalg.norm(old_robot_pos - self.env.video_position_matrix[self.time][i])
-                        if appear_distance < self.collision_radius + 1e-2:
-                        # if appear_distance < 0.2:
+                        if appear_distance < self.collision_radius + 0.5:
                             continue
 
                         self.history_idxes.append(current_pedestrians_idx[i])
@@ -800,11 +802,12 @@ class Simulator(object):
             frame = self.render()
             self.image_sequences.append(frame)
             ########### save the image to the output directory ##############
-            # tmp_fig = plt.figure()
-            # tmp_ax = tmp_fig.add_subplot(111)
-            # self.render_for_save(tmp_ax)
-            # tmp_fig.savefig(os.path.join(self.output_dir, "figs/" + str(self.time) + ".png"))
-            # plt.close(tmp_fig)
+            if self.time % 20 == 0:
+                tmp_fig = plt.figure()
+                tmp_ax = tmp_fig.add_subplot(111)
+                self.render_for_save(tmp_ax)
+                tmp_fig.savefig(f"{self.output_dir}/figs/{self.env_name}_{self.env_flag}/case_{self.case_id}/{self.time}.png")
+                plt.close(tmp_fig)
             #################################################################
             if self.done:
                 self._write_video()

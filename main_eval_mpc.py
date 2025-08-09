@@ -69,14 +69,9 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    # data_file = "ucy_1"
-    # data_file = "ucy_2"
-    # data_file = "eth_0"
-    # data_file = "test"
-    # data_file = "all_origin"
-    data_file = "synthetic_test2"
-    # data_file = "synthetic_train2"
-    # data_file = "eth0_left_to_right"
+    # data_file = "synthetic_test"
+    data_file = "eth_ucy_test"
+    
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -90,21 +85,14 @@ if __name__ == "__main__":
         writer.writerow(headers)  # Write the header row
     #################################################################
 
-    # sim.case_id_list.sort()
-    np.random.shuffle(sim.case_id_list)
+    sim.case_id_list.sort()
+    # np.random.shuffle(sim.case_id_list)
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
 
-    # mpc_horizon = mpc_config.getint('mpc_env', 'mpc_horizon')
-    # max_speed = mpc_config.getfloat('mpc_env', 'max_speed')
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
-    
-    
-    # for case_id in [2835]:
-    # for case_id in [1068]:
-    # for _ in range(5):
     
     ######################### Get the test cases want to check ######################
     # fail_case_file = "exps/failed_cases_noreward.csv"

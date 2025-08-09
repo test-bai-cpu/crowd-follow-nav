@@ -99,3 +99,10 @@ scp -r yzu@130.243.124.57:~/crowd-follow-docker/crowd-follow-nav/results/e011_rw
 scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/e011_rw100_1_0_react_sfmrobot_c0.5_h9_syn ~/research/crowd-follow-nav/results
 
 scp -r yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/e011_rw100_1_20_react_sfmrobot_c0.5_h9_syn ~/research/crowd-follow-nav/results
+
+
+mkdir -p ~/research/crowd-follow-nav/results/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn
+
+scp yzu@130.243.124.74:~/crowd-follow-docker/crowd-follow-nav/results/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn/n_samples_1000000 ~/research/crowd-follow-nav/results/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn
+
+scp "yzu@130.243.124.74:~/crowd-follow-docker/crowd-follow-nav/results/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn/n_samples_*" ~/research/crowd-follow-nav/results/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn/

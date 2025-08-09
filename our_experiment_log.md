@@ -93,3 +93,26 @@ TODO:
  - Add verticals and horizontals flows in synthetic data, or even more angles. Use this data to train the model, to see if works on eth/ucy test data
  - If not works well, can train both with synthetic data and eth / ucy data.
  - If cannot see good results on our model / bad results on baseline model, use synthetic test data to create challenging cases for testing, like more density of crowds.
+
+
+
+
+
+
+# For SARL basleine
+
+1. consider always remove the il_weights, and sarl_memory baseline. 
+2. Now for SARL test, change from 3 * case time limit to 10 * case time limit
+<!-- 3. The seed is not fixed yet. for running sarl, every time, the case_id for IL is different.  -->
+
+4. I think the reward value in the tensorboard is not correct. 
+
+
+TODO:
+1. consider to add TUTR in the MPC-HMP method.
+2. 
+
+
+
+Aug 9:
+1. increase the new people appear distance threshold. And train the synthetic model again.

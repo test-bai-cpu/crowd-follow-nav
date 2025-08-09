@@ -94,15 +94,23 @@ files = [
     # "exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv",
     # "exps/results/evas/test_e005_all_mpcSafeCost.csv"
     
-    "exps/results_ethucy/e010_rw100_1_0_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_0_react_sfmrobot_c0.1_h5.csv",
-    "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h4/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h4.csv",
-    "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h5.csv"
+    # "exps/results_ethucy/e010_rw100_1_0_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_0_react_sfmrobot_c0.1_h5.csv",
+    # "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h4/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h4.csv",
+    # "exps/results_ethucy/e010_rw100_1_5_react_sfmrobot_c0.1_h5/evas/test_e010_rw100_1_5_react_sfmrobot_c0.1_h5.csv"
+
+    # "exps/results_all/e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn/evas/synthetic_test_e012_rw100_1_0_react_sfmrobot_c0.5_h9_syn.csv",
+    # "exps/results_all/e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn/evas/synthetic_test_e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn.csv",
+    # "exps/results_all/e012_rw100_1_5_react_sfmrobot_c0.5_h9_syn/evas/synthetic_test_e012_rw100_1_5_react_sfmrobot_c0.5_h9_syn.csv",
+    
+    "exps/results_all/e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth/evas/eth_ucy_test_e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth.csv",
+    "exps/results_all/e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth/evas/eth_ucy_test_e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth.csv",
+    "exps/results_all/e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth/evas/eth_ucy_test_e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth.csv",
 ]
 
 all_results = [get_results(f) for f in files]
 
 results_df = pd.DataFrame(all_results)
-results_df.to_csv("exps/results_ethucy/summary_results_eth_3.csv", index=False)
+results_df.to_csv("exps/results_all/summary_results_eth.csv", index=False)
 
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward_fw5.csv")
 # get_results("exps/results/evas/test_e005_all_mpcSafeCost_rlReward.csv")

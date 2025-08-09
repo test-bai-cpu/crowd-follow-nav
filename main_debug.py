@@ -100,13 +100,8 @@ if __name__ == "__main__":
     # data_file = "ucy_2"
     # data_file = "eth_0"
     # data_file = "all"
-    # data_file = "synthetic_train"
-    # data_file = "synthetic_1"
-    # data_file = "synthetic_train7"
-    # data_file = "synthetic_train8"
-    data_file = "synthetic_train9"
-    # data_file = "all_v2"
-    # data_file = "eth0_left_to_right"
+    data_file = "synthetic_train"
+    # data_file = "synthetic_test"
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -254,12 +249,3 @@ if __name__ == "__main__":
                 result_dict["avg_ped_dist"],
                 ])  # Write the header row
         #########################################################################
-
-    # sim = Simulator(args, 'data/eth_0.json', logger)
-    # agent = PedNoPredMPC(args, logger)
-    # obs = sim.reset(100)
-    # done = False
-    # while not done:
-    #     action = agent.act(obs)
-    #     obs, reward, done, info = sim.step(action)
-    # sim.evaluate(output=True)

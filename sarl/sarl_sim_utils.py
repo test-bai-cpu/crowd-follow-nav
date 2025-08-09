@@ -9,8 +9,8 @@ from crowd_sim.envs.utils.state import JointState, FullState
 def process_obs_to_sarl(origin_obs):
     sarl_obs = []
 
-    ped_positions = origin_obs["pedestrians_pos"]  # shape: (N, 2)
-    ped_velocities = origin_obs["pedestrians_vel"]  # shape: (N, 2)
+    ped_positions = origin_obs["pedestrians_pos"].copy()  # shape: (N, 2)
+    ped_velocities = origin_obs["pedestrians_vel"].copy()  # shape: (N, 2)
 
     for pos, vel in zip(ped_positions, ped_velocities):
         px, py = pos

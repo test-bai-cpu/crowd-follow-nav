@@ -5,6 +5,7 @@ import yaml
 import numpy as np
 import random
 import time
+import pickle
 
 from config import get_args, check_args
 from sim.simulator import Simulator
@@ -96,17 +97,9 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    # data_file = "ucy_1"
-    # data_file = "ucy_2"
-    # data_file = "eth_0"
-    data_file = "all"
+    data_file = "eth_ucy_train"
     # data_file = "synthetic_train"
-    # data_file = "synthetic_1"
-    # data_file = "synthetic_train7"
-    # data_file = "synthetic_train8"
-    # data_file = "synthetic_train9"
-    # data_file = "all_v2"
-    # data_file = "eth0_left_to_right"
+
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -130,7 +123,6 @@ if __name__ == "__main__":
                    rl_config["latent_dim"], device)
     rl_trainer = ContinuousSACTrainer(rl_agent, result_dir, rl_config)
     train_info = {}
-    # max_follow_pos_delta = rl_config["max_follow_pos_delta"]
 
     tb_writer = SummaryWriter(f"{rl_config['result_dir']}/logs/{args.exp_name}/{int(time.time())}")
     logger.info(f"RL result directory: {result_dir}")
@@ -141,8 +133,7 @@ if __name__ == "__main__":
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
 
-    # mpc_horizon = mpc_config.getint('mpc_env', 'mpc_horizon')
-    # max_speed = mpc_config.getfloat('mpc_env', 'max_speed')
+    # max_follow_pos_delta = rl_config["max_follow_pos_delta"]
     max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
                             mpc_config.getfloat('mpc_env', 'max_speed'))
 
@@ -198,11 +189,11 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
 
-
             for mpc_steps_in_one_follow_state in range(10):
                 ###### MPC generate action ######
                 # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
                 action_mpc = mpc.get_action(obs, target, follow_state)
+                # print(">>> in Training, action_mpc =", action_mpc)
                 ################################
 
                 obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
@@ -238,6 +229,24 @@ if __name__ == "__main__":
             rl_trainer.save_model()
             #################################################################################
 
+        ################# save the robot path and human path #############################
+        # save_filename = f"{data_file}_{args.exp_name}.pkl"
+        # save_filepath = os.path.join(sim.output_dir, "evas", save_filename)
+        
+        # existing_data = {}
+        # if os.path.exists(save_filepath):
+        #     try:
+        #         with open(save_filepath, "rb") as f:
+        #             existing_data = pickle.load(f)
+        #     except (pickle.UnpicklingError, EOFError):
+        #         existing_data = {}
+        
+        # existing_data[case_id] = sim.save_all_traj.copy()
+        
+        # with open(save_filepath, "wb") as f:
+        #     pickle.dump(existing_data, f)
+        #     logger.info(f"Case {case_id} trajectory appended to {save_filepath}")
+        #################################################################################
 
         ############## save the evaluation results to the csv file ##############
         result_dict = sim.evaluate(output=True)
@@ -256,12 +265,3 @@ if __name__ == "__main__":
                 result_dict["avg_ped_dist"],
                 ])  # Write the header row
         #########################################################################
-
-    # sim = Simulator(args, 'data/eth_0.json', logger)
-    # agent = PedNoPredMPC(args, logger)
-    # obs = sim.reset(100)
-    # done = False
-    # while not done:
-    #     action = agent.act(obs)
-    #     obs, reward, done, info = sim.step(action)
-    # sim.evaluate(output=True)

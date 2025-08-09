@@ -20,8 +20,37 @@ class GroupLinearMPC(BaseMPC):
         return
     
     def linear_predict_location(self, positions, velocities, labels):
-        # Linearly predict the future positions and velocities of the groups
-        # by using the current central positions and velocities of the groups
+        # Linearly predict the future positions and velocities of the pedestrians
+        # Inputs:
+        # positions: the current positions of the pedestrians Nx2
+        # velocities: the current velocities of the pedestrians Nx2
+        # labels: the group labels of the pedestrians at the current time N
+        # self.mpc_horizon: the length of the prediction sequence
+        # dt: the time interval between frames
+
+        # Outputs:
+        # future_positions: the predicted future positions of the pedestrians N, self.mpc_horizon, 2
+
+        N = positions.shape[0]
+        future_positions = np.zeros((N, self.mpc_horizon, 2))
+        all_labels = np.unique(labels)
+        label_to_mean_velocity = {}
+
+        for curr_label in all_labels:
+            idxes = np.where(labels == curr_label)[0]
+            group_velocities = velocities[idxes]
+            mean_velocity = np.mean(group_velocities, axis=0)
+            label_to_mean_velocity[curr_label] = mean_velocity
+
+        for i in range(N):
+            group_vel = label_to_mean_velocity[labels[i]]
+            for t in range(self.mpc_horizon):
+                future_positions[i, t] = positions[i] + group_vel * self.dt * (t + 1)
+                
+        return future_positions
+    
+    def TUTR_predict_location(self, positions, velocities, labels):
+        # Using TUTR method to predict the future positions and velocities of the pedestrians
         # Inputs:
         # positions: the current positions of the pedestrians Nx2
         # velocities: the current velocities of the pedestrians Nx2

@@ -59,6 +59,7 @@ pip install tensorboard==2.13.0
 pip install gymnasium==1.1.0
 
 
+pip install gym==0.17.3
 
 # Run the program
 ```bash
