@@ -785,12 +785,15 @@ class Simulator(object):
                 # use ORCA to update pedestrian positions
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
                 #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                # ORCAnoRobot
                 # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step_norobot(
                 #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
-                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
-                    # old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
-                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
-                    self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                # SFM
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                # SFMnoRobot
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step_norobot(
+                #     self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward
@@ -948,10 +951,10 @@ class Simulator(object):
             if self.react:
                 tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
                     old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
-                    
+
                 # tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
                     # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
-                    
+
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
                     # update pedestrian history by rolling forward

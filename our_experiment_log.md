@@ -102,10 +102,8 @@ TODO:
 # For SARL basleine
 
 1. consider always remove the il_weights, and sarl_memory baseline. 
-2. Now for SARL test, change from 3 * case time limit to 10 * case time limit
+2. Now for SARL test, change from 3 * case time limit to 10 * case time limit, now change back to 3 * case time limit, same as others
 <!-- 3. The seed is not fixed yet. for running sarl, every time, the case_id for IL is different.  -->
-
-4. I think the reward value in the tensorboard is not correct. 
 
 
 TODO:
@@ -116,3 +114,42 @@ TODO:
 
 Aug 9:
 1. increase the new people appear distance threshold. And train the synthetic model again.
+2. check the test dataset again. Now it is too large, takes long time to finish the evaluation, should be much more shorter.
+decide to use the 500 test cases. Use the same test dataset, randomly choose 500 from ~2100.
+3. run the main_eval_mpc.py, finish for both eth and synth dataset. 
+4. Run the training of sarl model.on synth dataset. react, sfm norobot.
+5. On deepgear a and est machine, train RL+MPC model for both eth and synth dataset. This time, we dont pop nearby pedestrians in 1 meter, and also in sfm, we dont consider robot position.
+
+
+
+
+
+Experiments results:
+1. MPC-CVM, 1)SFM react version with robot. 2)SFM react version without robot. 2)no-react, playback dataset version. 3) ORCA react version.
+
+2. ORCA -> 1)no-react dataset version.
+3. SFM -> 1)no-react dataset version.
+
+4. RL-MPC 
+  train model: 
+  - noreact (finished in deepgeara)
+  - react orca  (finished in deepgeareset)
+  - react orca norobot (finished in deepgeareset)
+  - react sfm (before we have this version. in e012, e013.). We train again, same in e016. running in deepgearest
+  - react sfm norobot (finished in deepgeara)
+
+  eval, eval every model in step 100k.
+  - noreact
+  - react sfm
+  - 
+
+5. SARL:
+  train model:
+  - react sfm robot (can happen that a human is somehow following the robot, to make it not reach to goal)
+  - react sfm norobot (running in desktop)
+
+
+
+
+Sep 1:
+1. Organize the code

@@ -85,7 +85,7 @@ if __name__ == "__main__":
     yaml_dict = yaml.safe_load(yaml_stream)
     dsets = yaml_dict["datasets"]
     flags = yaml_dict["flags"]
-    if not len(dsets) == len(flags):
+    if not len(dsets) == len(flags):  
         logger.error("datasets file - number of datasets and flags are not equal!")
         raise Exception("datasets file - number of datasets and flags are not equal!")
 
@@ -97,10 +97,15 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    data_file = "synthetic_test"
+    if args.dset_file == "datasets.yaml":
+        data_file = "eth_ucy_test"
+    elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
+        data_file = "synthetic_test"
+        
+    # data_file = "synthetic_test"
     # data_file = "eth_ucy_test"
     # data_file = "eth_ucy_train"
-
+    print("<<<< The args.react are: ", args.react, args)
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -155,7 +160,9 @@ if __name__ == "__main__":
     # for case_id in collision_fail_case_ids:
     
     # for case_id in [2105]:
-    for case_id in sim.case_id_list:
+    # for case_id in sim.case_id_list:
+    for case_id_index in range(500):
+        case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
@@ -171,6 +178,8 @@ if __name__ == "__main__":
             robot_vx = robot_speed * np.cos(robot_motion_angle)
             robot_vy = robot_speed * np.sin(robot_motion_angle)
             nearby_human_state = obs_data_parser.get_human_state(obs) ## padding to max_humans, padding with 1e6 (for pos and vel). Human_state is (n, 4): pos_x, pos_y, vel_x, vel_y
+            
+            # start_time = time.time()
             
             ############ RL model output the follow_pos ############
             rl_obs = preprocess_rl_obs(nearby_human_state, current_state, robot_vx, robot_vy, sim.goal_pos) ## TODO: can move it outside the loop?
@@ -202,18 +211,33 @@ if __name__ == "__main__":
             follow_state = follow_state.reshape(1, -1)
             ########################################################
 
+            # end_time = time.time()
+            # print("RL spend time: ", end_time - start_time)
+            
             ############ use fixed way to generate a follow state ############
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
             ########################################################
 
             for mpc_steps_in_one_follow_state in range(10):
+                
+                # start_time = time.time()
+                
                 ###### MPC generate action ######
                 # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
                 action_mpc = mpc.get_action(obs, target, follow_state)
                 # print(">>> in Training, action_mpc =", action_mpc)
                 ################################
+                
+                # end_time = time.time()
+                
+                # print("MPC spend time: ", end_time - start_time)
 
+                start_time = time.time()
                 obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
+                end_time = time.time()
+                
+                # print("Sim spend time: ", end_time - start_time)
+                
                 if done == True:
                     break
 

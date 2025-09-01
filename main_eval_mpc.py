@@ -70,8 +70,8 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    data_file = "synthetic_test"
-    # data_file = "eth_ucy_test"
+    # data_file = "synthetic_test"
+    data_file = "eth_ucy_test"
     
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
