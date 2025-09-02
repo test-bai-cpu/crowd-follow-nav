@@ -121,11 +121,11 @@ python3 main.py --group --record --react --exp_name e012_rw100_1_5_react_sfmrobo
 python3 main.py --group --record --react --exp_name e012_rw100_1_10_react_sfmrobot_c0.5_h9_syn --dset-file datasets_syn.yaml --follow-weight 10 --collision_radius 0.5
 
 python3 main.py --group --record --react --exp_name e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 0 --collision_radius 0.5
-python3 main.py --group --record --react --exp_name e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5
+python3 main.py --group --record --react --exp_name e016_rw100_1_1_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5
 python3 main.py --group --record --react --exp_name e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 5 --collision_radius 0.5
 
-python3 main_sarl_train2.py --group --record --react --exp_name e102_sarl_eth --dset-file datasets_syn.yaml --collision_radius 0.0 # test when not consider collision
-python3 main_sarl_train2.py --group --record --react --exp_name e104_sarl_syn --dset-file datasets_syn.yaml --collision_radius 0.5 --output-dir exps/results_sarl ## remove robot from sfm step
+python3 main_sarl_train2.py --group --record --react --exp_name e102_sarl_eth --dset-file datasets_syn.yaml --collision_radius 0.5 # test when not consider collision
+python3 main_sarl_train2.py --group --record --react --exp_name e105_sarl_syn --dset-file datasets_syn.yaml --collision_radius 0.5 --output-dir exps/results_sarl ## remove robot from sfm step
 
 
 python3 main_eval.py --group --record --react --exp_name e012_rw100_1_1_react_sfmrobot_c0.5_h9_syn --rl_model_weight n_samples_1000000 --output-dir exps/results_all/test --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5
@@ -202,6 +202,46 @@ python3 main_eval.py --group --record --react --exp_name e012_rw100_1_5_react_sf
 python3 main_eval.py --group --record --react --exp_name e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_0_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 0 --collision_radius 0.5
 python3 main_eval.py --group --record --react --exp_name e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_1_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5
 python3 main_eval.py --group --record --react --exp_name e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --rl_model_weight n_samples_1000000 --output-dir exps/results_all/e013_rw100_1_5_react_sfmrobot_c0.5_h9_eth --dset-file datasets.yaml --follow-weight 5 --collision_radius 0.5
+
+
+
+#### For evaluating MPC + RL model, to see different settings
+
+# Finish
+python3 main_eval.py --group --record --exp_name e016_rw100_1_1_noreact_sfmnorobot_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_noreact_sfmnorobot_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_noreact_sfmnorobot_eth_log.txt 2>&1
+python3 main_eval.py --group --record --exp_name e016_rw100_1_1_noreact_sfmnorobot_syn --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_noreact_sfmnorobot_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_noreact_sfmnorobot_syn_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_sfm_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_sfm_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_sfm_eth_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_sfm_syn --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_sfm_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_sfm_syn_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_sfmnorobot_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_sfmnorobot_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_sfmnorobot_eth_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_sfmnorobot_syn --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_sfmnorobot_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_sfmnorobot_syn_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_orcanorobot_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_orcanorobot_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_orcanorobot_eth_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_orcanorobot_syn --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_orcanorobot_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_orcanorobot_syn_log.txt 2>&1
+# running
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_orca_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_orca_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_orca_eth_log.txt 2>&1
+python3 main_eval.py --group --record --react --exp_name e016_rw100_1_1_react_orca_syn --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_orca_syn --dset-file datasets_syn.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/e016_rw100_1_1_react_orca_syn_log.txt 2>&1
+
+
+### time run time, save the exp folder before run
+python3 main_eval.py --group --record --exp_name e016_rw100_1_1_react_sfm_eth --rl_model_weight n_samples_0100000 --output-dir exps/results_MPC_RL/e016_rw100_1_1_react_sfm_eth --dset-file datasets.yaml --follow-weight 1 --collision_radius 0.5 > exps/results_MPC_RL/time_test.txt 2>&1
+
+
+#### For evaluating the MPC model
+python3 main_eval_mpc.py --group --record --react --output-dir exps/results_mpc --exp_name e002_mpc_linear --dset-file datasets.yaml --collision_radius 0.5
+
+
+python3 main_eval_mpc.py --group --record --react --output-dir exps/results_mpc --exp_name e003_mpc_sfmrobot_eth --dset-file datasets.yaml --collision_radius 0.5
+python3 main_eval_mpc.py --group --record --react --output-dir exps/results_mpc --exp_name e003_mpc_orcarobot_eth --dset-file datasets.yaml --collision_radius 0.5
+python3 main_eval_mpc.py --group --record --react --output-dir exps/results_mpc --exp_name e003_mpc_sfmnorobot_eth --dset-file datasets.yaml --collision_radius 0.5
+python3 main_eval_mpc.py --group --record --react --output-dir exps/results_mpc --exp_name e003_mpc_orcanorobot_eth --dset-file datasets.yaml --collision_radius 0.5
+python3 main_eval_mpc.py --group --record --output-dir exps/results_mpc --exp_name e003_mpc_noreact_eth --dset-file datasets.yaml --collision_radius 0.5
+
+
+
+#### For evaluating the SARL model
+
+python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_sfm_log.txt 2>&1 
+python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_noreact_log.txt 2>&1 
+
 
 
 ### For plotting images

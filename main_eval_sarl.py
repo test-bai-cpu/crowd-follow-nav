@@ -284,25 +284,30 @@ if __name__ == "__main__":
     args.group = True
     args.record = True
     args.react = True
+    
     dataset_name = "eth"       # "syn"
-    args.exp_name = f"e104_sarl_{dataset_name}_orca"
-    # args.exp_name = f"e104_sarl_{dataset_name}_orcaNoRobot"
+    
+    # args.exp_name = f"e104_sarl_{dataset_name}_orca"
+    # args.exp_name = f"e104_sarl_{dataset_name}_orcanorobot"
     # args.exp_name = f"e104_sarl_{dataset_name}_sfm"
-    # args.exp_name = f"e104_sarl_{dataset_name}_sfmNoRobot"
-    # args.exp_name = f"e104_sarl_{dataset_name}_noReact"       # args.react = False
+    # args.exp_name = f"e104_sarl_{dataset_name}_sfmnorobot"
+    
+    args.exp_name = f"e104_sarl_{dataset_name}_noreact"       # args.react = False
+    args.react = False
+    
+    
     if dataset_name == "syn":
         args.dset_file = "datasets_syn.yaml"        # eth: datasets.yaml, syn: datasets_syn.yaml
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_sarl_20250815/{args.exp_name}"
+    args.output_dir = f"exps/results_sarl_20250902/{args.exp_name}"
 
-    total_eval_episodes = 10
+    total_eval_episodes = 500
 
     set_random_seed(args.seed)
 
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     log_fname = os.path.join(args.output_dir, 'experiment.log')
     file_handler = logging.FileHandler(log_fname, mode='w')
