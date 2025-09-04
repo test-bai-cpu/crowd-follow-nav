@@ -1,24 +1,24 @@
 import os, sys
+
+sys.path.append(os.path.abspath("./crowdattn"))
+
 import csv
-import pickle
 import logging
 import yaml
 import numpy as np
 import time
 import random
 import pandas as pd
+import pickle
 
 from config import get_args, check_args
 from sim.simulator import Simulator
-from sim.mpc.ped_nopred_mpc import PedNoPredMPC
 from controller.group_linear_mpc import GroupLinearMPC
-from controller.crowd_aware_MPC import CrowdAwareMPC
 from controller import mpc_utils
 from obs_data_parser import ObsDataParser
 
-#### RL model
+from sim.crowd_attn_rl import CrowdAttnRL
 import torch
-#### -----------------------------------
 
 
 def set_random_seed(seed):
@@ -39,15 +39,17 @@ if __name__ == "__main__":
     args.group = True
     args.record = True
     args.react = True
+    args.history = True
+    args.animate = False
+
+    dataset_name = "eth"       # "syn" / "eth"
     
-    dataset_name = "syn"       # "syn"
+    args.exp_name = f"e001_attl_{dataset_name}_orca"
+    # args.exp_name = f"e001_attl_{dataset_name}_orcanorobot"
+    # args.exp_name = f"e001_attl_{dataset_name}_sfm"
+    # args.exp_name = f"e001_attl_{dataset_name}_sfmnorobot"
     
-    args.exp_name = f"e001_mpc_{dataset_name}_orca"
-    # args.exp_name = f"e001_mpc_{dataset_name}_orcanorobot"
-    # args.exp_name = f"e001_mpc_{dataset_name}_sfm"
-    # args.exp_name = f"e001_mpc_{dataset_name}_sfmnorobot"
-    
-    # args.exp_name = f"e001_mpc_{dataset_name}_noreact"       # args.react = False
+    # args.exp_name = f"e001_attl_{dataset_name}_noreact"       # args.react = False
     # args.react = False
     
     
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_mpc_20250904/{args.exp_name}"
+    args.output_dir = f"exps/results_attl_20250903/{args.exp_name}"
     
     set_random_seed(args.seed)
 
@@ -81,7 +83,7 @@ if __name__ == "__main__":
     yaml_dict = yaml.safe_load(yaml_stream)
     dsets = yaml_dict["datasets"]
     flags = yaml_dict["flags"]
-    if not len(dsets) == len(flags):
+    if not len(dsets) == len(flags):  
         logger.error("datasets file - number of datasets and flags are not equal!")
         raise Exception("datasets file - number of datasets and flags are not equal!")
 
@@ -98,6 +100,7 @@ if __name__ == "__main__":
     elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
         data_file = "synthetic_test"
 
+    print("<<<< The args.react are: ", args.react, args)
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -112,44 +115,50 @@ if __name__ == "__main__":
     #################################################################
 
     sim.case_id_list.sort()
-    # np.random.shuffle(sim.case_id_list)
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
-
-    max_follow_pos_delta = (mpc_config.getint('mpc_env', 'mpc_horizon') *
-                            mpc_config.getfloat('mpc_env', 'max_speed'))
     
-    ######################### Get the test cases want to check ######################
-    # fail_case_file = "exps/failed_cases_noreward.csv"
-    # fail_case_df = pd.read_csv(fail_case_file)
-    # collision_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Collision']['case_id'].tolist()
-    # time_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Time']['case_id'].tolist()
-    #################################################################################
-    
-    # for case_id in sim.case_id_list:
     for case_id_index in range(500):
         case_id = random.choice(sim.case_id_list)
+        # if case_id != 102:
+        #     continue
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
         
-        ###### MPC initialization ######
-        # mpc = CrowdAwareMPC(mpc_config, args.use_a_omega, args.differential)
-        mpc = GroupLinearMPC(mpc_config, args, logger)
-        ################################
+        
+        case_info = sim.get_case_info()
+        # set up the prediction model checkpoint path
 
+        if (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 0):
+            sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
+        elif (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 1):
+            sgan_model_path = "sgan/models/sgan-models/hotel_" + str(args.future_steps) + "_model.pt"
+        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 0):
+            sgan_model_path = "sgan/models/sgan-models/zara1_" + str(args.future_steps) + "_model.pt"
+        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 1):
+            sgan_model_path = "sgan/models/sgan-models/zara2_" + str(args.future_steps) + "_model.pt"
+        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 2):
+            sgan_model_path = "sgan/models/sgan-models/univ_" + str(args.future_steps) + "_model.pt"
+        else:
+            sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
+        
+        
+        args.future_steps = 5
+        agent = CrowdAttnRL(args, logger, sgan_model_path, 'crowdattn/trained_models', ckpt='41665.pt')
+        args.future_steps = 8
+        
+        
         time_step = 0
         while not done:
-            current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
+            action = agent.act(obs, done)
+            obs, reward, done, info, time_step, info_dict = sim.step(action)
             
-            ############ Use goal pos as the follow_pos ############
-            follow_state = np.array([sim.goal_pos[0], sim.goal_pos[1], 0.0, 0.0])
-            follow_state = follow_state.reshape(1, -1)
-            ########################################################
+            if args.animate and not args.paint_boundary:
+                frame = sim.get_latest_render_frame()
+                sim.update_latest_render_frame(frame)
             
-            action_mpc = mpc.get_action(obs, target, follow_state)
-            obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
 
         ################# save the robot path and human path #############################
         save_filename = f"{data_file}_{args.exp_name}.pkl"
@@ -169,7 +178,6 @@ if __name__ == "__main__":
             pickle.dump(existing_data, f)
             logger.info(f"Case {case_id} trajectory appended to {save_filepath}")
         #################################################################################
-
 
         ############## save the evaluation results to the csv file ##############
         result_dict = sim.evaluate(output=True)

@@ -39,7 +39,7 @@ def get_args():
     parser.add_argument(
         "--robot-speed",
         type=float,
-        default=1.75,
+        default=1.0,
         help="maximum robot speed (avg human walking speed)"
     )
 
@@ -122,6 +122,20 @@ def get_args():
     )
 
     parser.add_argument(
+        "--paint-boundary",
+        action='store_true',
+        default=False,
+        help="turn off to paint boundary externaly of the simulator"
+    )
+
+    parser.add_argument(
+        "--edge-offset",
+        type=float,
+        default=1.0,
+        help="length of offset for the back edge"
+    )
+
+    parser.add_argument(
         "--pred-method",
         type=str,
         default=None,
@@ -172,18 +186,25 @@ def get_args():
         help="positional noise of the lidar scan point"
     )
 
+    parser.add_argument(
+        "--num-directions",
+        type=int,
+        default=12,
+        help="number of general direction rollouts for MPC"
+    )
+
     # MPC configuration
     parser.add_argument(
         "--num-linear",
         type=int,
-        default=12,
+        default=10,
         help="number of general direction rollouts for MPC"
     )
 
     parser.add_argument(
         "--num-angular",
         type=int,
-        default=12,
+        default=10,
         help="number of general direction rollouts for MPC"
     )
 
@@ -234,12 +255,6 @@ def get_args():
     )
 
     # MPC configuration
-    parser.add_argument(
-        "--num-directions",
-        type=int,
-        default=12,
-        help="number of general direction rollouts for MPC"
-    )
 
     parser.add_argument(
         "--gamma",
@@ -254,6 +269,20 @@ def get_args():
         default=1,
         help="reward weight for following the group"
     )
+
+    parser.add_argument(
+        "--rl-humans",
+        type=int,
+        default=10,
+        help="maximum number of humans for rl"
+    )
+
+
+    parser.add_argument(
+        '--gpu-id',
+        type=int,
+        default=0,
+        help='GPU device ID')
 
     try:
         args = parser.parse_args()

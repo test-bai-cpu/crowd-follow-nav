@@ -14,3 +14,4 @@ pandas==2.0.3
 casadi==3.6.7
 tensorboard==2.13.0
 gymnasium==1.1.0
+gym==0.17.3

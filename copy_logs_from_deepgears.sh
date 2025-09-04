@@ -35,3 +35,8 @@
 
 scp -r "yzu@130.243.124.74:~/crowd-follow-docker/crowd-follow-nav/results/e016*" ~/research/crowd-follow-nav/results/
 scp -r "yzu@130.243.124.183:~/crowd-follow-docker/crowd-follow-nav/results/e016*" ~/research/crowd-follow-nav/results/
+
+
+
+scp -r "yzu@130.243.124.74:/home/yzu/crowd-follow-docker/crowd-follow-nav/exps/results_sarl_20250902/e104*" ~/research/crowd-follow-nav/exps/results_sarl_20250902/
+

@@ -37,12 +37,18 @@ docker run -it --rm \
   -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
   dockerhuaniden/crowd-nav-dev
 
-
 cd crowd-follow-nav
 
 python3 main.py --group --record --react --exp_name e004_l2r_goalvxvy_mpcMultiStep
 
 ctrl p q
+
+### for sarl
+docker run -it --rm \
+  --gpus all \
+  --name sarl-syn-sfm \
+  -v /home/yzu/crowd-follow-docker/crowd-follow-nav:/workdir/crowd-follow-nav \
+  dockerhuaniden/crowd-nav-dev-sarl
 
 
 # Run in deepgear for evaluation

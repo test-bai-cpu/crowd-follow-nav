@@ -156,8 +156,8 @@ class GroupLinearMPC(BaseMPC):
                 cost_safe = 0
 
             # self.rollouts_action shape: self.mpc_horizon, 2
-            # action_diffs = np.diff(self.rollouts_action[i], axis=0)
-            # cost_smooth = np.sum(np.square(action_diffs))
+            action_diffs = np.diff(self.rollouts_action[i], axis=0)
+            cost_smooth = np.sum(np.square(action_diffs))
             
             # follow_state: np.array([follow_pos[0], follow_pos[1], follow_speed, follow_motion_angle])
             follow_pos = self.follow_state[0, :2]

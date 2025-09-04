@@ -32,6 +32,7 @@ RUN cd /workdir/Python-RVO2 && \
 RUN cd /workdir/PySocialForce && \
     pip install -e '.[test,plot]'
     
-    
+RUN pip install gymnasium==1.1.0
+RUN pip install gym==0.17.3
 
 CMD ["/bin/bash"]

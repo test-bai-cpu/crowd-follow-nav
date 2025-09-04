@@ -7,6 +7,17 @@ docker run --gpus all -it --rm -v $(pwd):/workspace -w /workspace my-ubuntu-imag
 
 docker build -t crowd-nav-dev .
 
+
+# to build and push a new docker for future docker pull
+## update the dockerfile
+docker build -t crowd-nav-dev-sarl .
+docker tag crowd-nav-dev-sarl:latest dockerhuaniden/crowd-nav-dev-sarl:latest
+docker login
+docker push dockerhuaniden/crowd-nav-dev-sarl:latest
+docker pull dockerhuaniden/crowd-nav-dev-sarl:latest
+
+
+
 docker run -it --rm \
   -v /home/yufei/research/crowd-follow-nav:/workdir/crowd-follow-nav \
   crowd-nav-dev

@@ -79,7 +79,6 @@ TODO:
  - In chaos case, FRP happens with baseline, 
  - Baseline: 
    - SARL
-   - SARL + group reward
    - MPC
    - MPC + group cost
    - Follow is all you need paper
@@ -153,3 +152,17 @@ Experiments results:
 
 Sep 1:
 1. Organize the code
+
+Sep 2:
+1. evaluation.
+   
+
+
+change num-linear to 10, num-angular to 10. Before it is 12
+
+For run crowdattl, the goal_radius needs to set to 1.0 meter, otherwise cannot go to goal.
+
+
+Sep 4:
+1. the config.py robot speed is 1.75, different from the mpc config (1.0), keep both to 1.0. 
+2. think about keep sgan, or go back to gst. But do we have eth/ucy checkpoint for gst? 

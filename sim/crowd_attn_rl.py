@@ -1,11 +1,17 @@
 import numpy as np
 import torch
 import gym
+gym.logger.set_level(gym.logger.ERROR)   # or WARNING
+
+
 import os
+import sys
 from time import time
 
 from crowdattn.rl.networks.model import Policy
 from sgan.scripts.inference import SGANInference
+
+sys.path.append(os.path.abspath("./crowdattn"))
 
 class CrowdAttnRL(object):
     # The baseline model is the crowd attention RL model
@@ -25,7 +31,7 @@ class CrowdAttnRL(object):
 
         self.sgan = SGANInference(sgan_model_path, args.gpu_id)
         self.logger.info('SGAN loaded!')
-
+        
         from importlib import import_module
         model_dir_temp = model_dir
         if model_dir_temp.endswith('/'):
@@ -63,7 +69,7 @@ class CrowdAttnRL(object):
 			self.action_space,
 			base_kwargs=algo_args,
 			base='selfAttn_merge_srnn')
-        self.actor_critic.load_state_dict(torch.load(load_path, map_location=self.device))
+        self.actor_critic.load_state_dict(torch.load(load_path, map_location=self.device, weights_only=True))
         self.actor_critic.base.nenv = 1
         self.actor_critic.to(self.device)
 
@@ -85,7 +91,7 @@ class CrowdAttnRL(object):
         self.eval_time = []
 
         return
-
+    
     def _set_spaces(self):
         # Modified from crowdattn/crowd_sim/envs/crowd_sim_pred_real_gst.py
         """set observation space and action space"""
@@ -113,7 +119,7 @@ class CrowdAttnRL(object):
         # whether each human is visible to robot (ordered by human ID, should not be sorted)
         d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(self.human_num,),
-                                            dtype=np.bool)
+                                            dtype=bool)
 
         # number of humans detected at each timestep
         d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
@@ -123,25 +129,26 @@ class CrowdAttnRL(object):
         high = np.inf * np.ones([2, ])
         self.action_space = gym.spaces.Box(-high, high, dtype=np.float32)
         return
-
+    
     def convert_observation(self, obs):
         # Convert the observation to the format that the RL model expects
         robot_pos = obs['robot_pos']
         robot_goal = obs['robot_goal']
+        # print("goal: ", robot_goal)
         robot_vel = obs['robot_vel']
         robot_theta = obs['robot_th']
 
         curr_pos = obs['pedestrians_pos']
         actual_num_ped = len(curr_pos)
         num_ped = min(self.human_num, actual_num_ped)
-
+        
         if actual_num_ped > 0:
             has_ped = True
             dists = np.linalg.norm(curr_pos - robot_pos, axis=1)
             sorted_idx = np.argsort(dists)
             curr_pos = curr_pos[sorted_idx]
             history_pos = obs['pedestrians_pos_history']
-
+        
             pos_predictions = self.sgan.evaluate(history_pos)
             pos_predictions = pos_predictions[sorted_idx]
         else:
@@ -183,7 +190,7 @@ class CrowdAttnRL(object):
         obs_rl['detected_human_num'] = detected_human_num
 
         return obs_rl, has_ped
-
+    
     def act(self, obs, done=False):
         # Given an observation, return an action
         state_time_start = time()
@@ -220,11 +227,11 @@ class CrowdAttnRL(object):
                 [[0.0] if done_ else [1.0] for done_ in done],
                 dtype=torch.float32,
                 device=self.device)
-
+        
         self.state_time.append(state_time_end - state_time_start)
         self.eval_time.append(eval_time_end - eval_time_start)
         return action
-
+    
     def get_processing_time(self):
         # Get processing time for MPC
         if len(self.state_time) == 0 or len(self.eval_time) == 0:

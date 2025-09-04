@@ -238,9 +238,20 @@ python3 main_eval_mpc.py --group --record --output-dir exps/results_mpc --exp_na
 
 
 #### For evaluating the SARL model
-
+# my desktop
 python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_sfm_log.txt 2>&1 
 python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_noreact_log.txt 2>&1 
+
+# deepgeara
+python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_sfm_log.txt 2>&1 
+python3 main_eval_sarl.py > exps/results_sarl_20250902/e014_sarl_eth_noreact_log.txt 2>&1 
+
+
+python3 main_eval_sarl.py > exps/e014_sarl_syn_sfm_log.txt 2>&1 
+python3 main_eval_sarl.py > exps/e014_sarl_syn_noreact_log.txt 2>&1 
+python3 main_eval_sarl.py > exps/e014_sarl_syn_orca_log.txt 2>&1 
+
+
 
 
 

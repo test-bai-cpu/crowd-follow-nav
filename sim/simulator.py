@@ -145,12 +145,16 @@ class Simulator(object):
             }
         return
 
-    def dataset_history(self, ped_idx):
+    def dataset_history(self, ped_idx, new_pedestrians_idx=None):
         # return the position and velocity history of a pedestrian
         # if the pedestrian is not in the dataset, return None
 
-        if ped_idx not in self.pedestrians_idx:
-            return None
+        if new_pedestrians_idx is None:
+            if ped_idx not in self.pedestrians_idx:
+                return [], []
+        else:
+            if ped_idx not in new_pedestrians_idx:
+                return [], []
 
         pos_history = []
         vel_history = []
@@ -459,6 +463,17 @@ class Simulator(object):
         self.done = False
 
         return observation_dict
+
+    def get_latest_render_frame(self):
+        # get the latest render frame
+        if len(self.image_sequences) == 0:
+            return None
+        return self.image_sequences[-1]
+    
+    def update_latest_render_frame(self, frame):
+        # update the latest render frame
+        self.image_sequences[-1] = frame
+        return
 
     def _get_pref_velocity(self, pos, goal, spd_limit):
         # get the preferred velocity of a pedestrian
@@ -807,8 +822,8 @@ class Simulator(object):
                     tmp_pedestrians_pos_history = []
                     tmp_pedestrians_vel_history = []
                     for i in range(len(self.pedestrians_pos_history)):
-                        tmp_pedestrians_pos_history.append(self.pedestrians_pos_history[i][1:] + self.pedestrians_pos[i])
-                        tmp_pedestrians_vel_history.append(self.pedestrians_vel_history[i][1:] + self.pedestrians_vel[i])
+                        tmp_pedestrians_pos_history.append(self.pedestrians_pos_history[i][1:] + [self.pedestrians_pos[i]])
+                        tmp_pedestrians_vel_history.append(self.pedestrians_vel_history[i][1:] + [self.pedestrians_vel[i]])
 
                 # remove pedestrians that have reached their goals
                 new_pedestrians_idx = []
@@ -841,7 +856,8 @@ class Simulator(object):
                         new_pedestrians_pos.append(self.env.video_position_matrix[self.time][i])
                         new_pedestrians_vel.append(self.env.video_velocity_matrix[self.time][i])
                         if self.history:
-                            pos_history, vel_history = self.dataset_history(current_pedestrians_idx[i])
+                            pos_history, vel_history = self.dataset_history(current_pedestrians_idx[i], new_pedestrians_idx)
+                            # if pos_history is not None and vel_history is not None:
                             new_pedestrians_pos_history.append(pos_history)
                             new_pedestrians_vel_history.append(vel_history)
                         new_pedestrians_goal.append(self.env.people_coords_complete[current_pedestrians_idx[i]][-1])
@@ -1310,6 +1326,18 @@ class Simulator(object):
 
         return max_group_score
 
+
+    def get_case_info(self):
+        # get the environment information
+        case_info = {}
+        case_info['env_name'] = self.env_name
+        case_info['env_flag'] = self.env_flag
+        case_info['start_pos'] = self.start_pos
+        case_info['goal_pos'] = self.goal_pos
+        case_info['start_frame'] = self.start_frame
+        case_info['time_limit'] = self.time_limit
+        return case_info
+    
 
     def evaluate(self, output=False):
         # evaluate the results of the simulation trial
