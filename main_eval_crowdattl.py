@@ -40,7 +40,8 @@ if __name__ == "__main__":
     args.record = True
     args.react = True
     args.history = True
-    args.animate = False
+    args.animate = True
+    args.goal_radius = 2.0
 
     dataset_name = "eth"       # "syn" / "eth"
     
@@ -58,7 +59,8 @@ if __name__ == "__main__":
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_attl_20250903/{args.exp_name}"
+    # args.output_dir = f"exps/results_attl_41665_speed1/{args.exp_name}"
+    args.output_dir = f"exps/results_quality/attn/{args.exp_name}"
     
     set_random_seed(args.seed)
 
@@ -119,41 +121,53 @@ if __name__ == "__main__":
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
     
-    for case_id_index in range(500):
-        case_id = random.choice(sim.case_id_list)
-        # if case_id != 102:
-        #     continue
+    # for case_id in [573]:
+    for case_id in [1988, 1936, 1904, 1747, 1663]:
+    # for case_id_index in range(500):
+        # case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
         
-        
         case_info = sim.get_case_info()
         # set up the prediction model checkpoint path
 
-        if (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 0):
-            sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
-        elif (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 1):
-            sgan_model_path = "sgan/models/sgan-models/hotel_" + str(args.future_steps) + "_model.pt"
-        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 0):
-            sgan_model_path = "sgan/models/sgan-models/zara1_" + str(args.future_steps) + "_model.pt"
-        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 1):
-            sgan_model_path = "sgan/models/sgan-models/zara2_" + str(args.future_steps) + "_model.pt"
-        elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 2):
-            sgan_model_path = "sgan/models/sgan-models/univ_" + str(args.future_steps) + "_model.pt"
-        else:
-            sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
+        # if (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 0):
+        #     sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
+        # elif (case_info['env_name'] == 'eth') and (case_info['env_flag'] == 1):
+        #     sgan_model_path = "sgan/models/sgan-models/hotel_" + str(args.future_steps) + "_model.pt"
+        # elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 0):
+        #     sgan_model_path = "sgan/models/sgan-models/zara1_" + str(args.future_steps) + "_model.pt"
+        # elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 1):
+        #     sgan_model_path = "sgan/models/sgan-models/zara2_" + str(args.future_steps) + "_model.pt"
+        # elif (case_info['env_name'] == 'ucy') and (case_info['env_flag'] == 2):
+        #     sgan_model_path = "sgan/models/sgan-models/univ_" + str(args.future_steps) + "_model.pt"
+        # else:
+        #     sgan_model_path = "sgan/models/sgan-models/eth_" + str(args.future_steps) + "_model.pt"
         
         
         args.future_steps = 5
-        agent = CrowdAttnRL(args, logger, sgan_model_path, 'crowdattn/trained_models', ckpt='41665.pt')
-        args.future_steps = 8
-        
+        # agent = CrowdAttnRL(args, logger, 'crowdattn/trained_models', ckpt='23576693.pt')
+        agent = CrowdAttnRL(args, logger, 'crowdattn/trained_models', ckpt='41665.pt')
         
         time_step = 0
         while not done:
+            
             action = agent.act(obs, done)
-            obs, reward, done, info, time_step, info_dict = sim.step(action)
+            vx = action[0]
+            vy = action[1]
+            action_speed = float(np.hypot(vx, vy))
+            
+            theta_des = np.arctan2(vy, vx)
+            theta_cur = sim.robot_th  # current heading
+            angle_err = mpc_utils.circdiff(theta_des, theta_cur)
+
+            k_w = 1.0
+            w_max = mpc_config.getfloat('mpc_env', 'max_rot_degrees') * sim.dt
+            action_theta = float(np.clip(k_w * angle_err, -w_max, w_max))
+            action_vw = np.array([action_speed, action_theta], dtype=np.float32)
+            
+            obs, reward, done, info, time_step, info_dict = sim.step(action_vw)
             
             if args.animate and not args.paint_boundary:
                 frame = sim.get_latest_render_frame()

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import gym
 gym.logger.set_level(gym.logger.ERROR)   # or WARNING
-
+import pickle
 
 import os
 import sys
@@ -10,6 +10,7 @@ from time import time
 
 from crowdattn.rl.networks.model import Policy
 from sgan.scripts.inference import SGANInference
+from crowdattn.gst_updated.scripts.wrapper.crowd_nav_interface_parallel import CrowdNavPredInterfaceMultiEnv
 
 sys.path.append(os.path.abspath("./crowdattn"))
 
@@ -18,9 +19,10 @@ class CrowdAttnRL(object):
     # Need both crowdattn and sgan to be installed
     # Modified from crowdattn/test.py and crowdattn/rl/evaluate.py
 
-    def __init__(self, args, logger, sgan_model_path, model_dir, ckpt='41665.pt'):
+    def __init__(self, args, logger, model_dir, ckpt='41665.pt'):
         self.logger = logger
-        self.robot_speed = args.robot_speed
+        # self.robot_speed = args.robot_speed
+        self.robot_speed = 1.0
         self.predict_steps = args.future_steps
         self.human_num = args.rl_humans
 
@@ -29,8 +31,21 @@ class CrowdAttnRL(object):
         else:
             self.device = torch.device('cpu')
 
-        self.sgan = SGANInference(sgan_model_path, args.gpu_id)
-        self.logger.info('SGAN loaded!')
+        # self.sgan = SGANInference(sgan_model_path, args.gpu_id)
+
+        load_path = os.path.join(os.getcwd(), "crowdattn/gst_updated/results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000_rand/sj")
+        if not os.path.isdir(load_path):
+            raise RuntimeError('The result directory was not found.')
+        checkpoint_dir = os.path.join(load_path, 'checkpoint')
+        with open(os.path.join(checkpoint_dir, 'args.pickle'), 'rb') as f:
+            gst_args = pickle.load(f)
+        self.predictor = CrowdNavPredInterfaceMultiEnv(
+            load_path=load_path, 
+            device=self.device, 
+            config=gst_args, 
+            num_env=1)
+
+        self.logger.info('HMP loaded!')
         
         from importlib import import_module
         model_dir_temp = model_dir
@@ -69,7 +84,7 @@ class CrowdAttnRL(object):
 			self.action_space,
 			base_kwargs=algo_args,
 			base='selfAttn_merge_srnn')
-        self.actor_critic.load_state_dict(torch.load(load_path, map_location=self.device, weights_only=True))
+        self.actor_critic.load_state_dict(torch.load(load_path, map_location=self.device, weights_only=False))
         self.actor_critic.base.nenv = 1
         self.actor_critic.to(self.device)
 
@@ -149,8 +164,18 @@ class CrowdAttnRL(object):
             curr_pos = curr_pos[sorted_idx]
             history_pos = obs['pedestrians_pos_history']
         
-            pos_predictions = self.sgan.evaluate(history_pos)
-            pos_predictions = pos_predictions[sorted_idx]
+            # pos_predictions = self.sgan.evaluate(history_pos)
+            # pos_predictions = pos_predictions[sorted_idx]
+            
+            in_traj = torch.tensor(history_pos, dtype=torch.float32, device=self.device).unsqueeze(0)
+            # take last 5 timesteps
+            in_traj = in_traj[:, :, -5:, :]
+            in_mask = torch.ones_like(in_traj[..., 0], dtype=torch.float32, device=self.device).unsqueeze(-1)
+            out_traj, out_mask = self.predictor.forward(input_traj=in_traj, input_binary_mask=in_mask)
+            out_traj = out_traj[:, :, :self.predict_steps, :2].squeeze(0)
+            out_traj = out_traj.cpu().numpy()
+            pos_predictions = out_traj[sorted_idx]
+            
         else:
             has_ped = False
             pos_predictions = []
@@ -220,6 +245,8 @@ class CrowdAttnRL(object):
         if act_norm > v_pref:
             action[0] = action[0] / act_norm * v_pref
             action[1] = action[1] / act_norm * v_pref
+            
+        # print("action: ", action)
         eval_time_end = time()
 
         done = [done]

@@ -62,6 +62,26 @@ def set_random_seed(seed):
 if __name__ == "__main__":
     # configue and logs
     args = get_args()
+    
+    args.group = True
+    args.record = True
+    args.react = True
+    args.follow_weight = 1.0
+
+    dataset_name = "eth"       # "syn" / "eth"
+    
+    args.exp_name = f"e001_mpcrl_{dataset_name}_orca"
+    
+    # args.exp_name = f"e001_mpcrl_{dataset_name}_noreact"       # args.react = False
+    # args.react = False
+    
+    if dataset_name == "syn":
+        args.dset_file = "datasets_syn.yaml"        # eth: datasets.yaml, syn: datasets_syn.yaml
+    else:
+        args.dset_file = "datasets.yaml"
+    args.collision_radius = 0.5
+    args.output_dir = f"exps/results_retrain/orca/{args.exp_name}"
+
     set_random_seed(args.seed)
 
     if not os.path.exists(args.output_dir):
@@ -97,8 +117,10 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    data_file = "eth_ucy_train"
-    # data_file = "synthetic_train"
+    if args.dset_file == "datasets.yaml":
+        data_file = "eth_ucy_train"
+    elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
+        data_file = "synthetic_train"
 
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
@@ -142,6 +164,7 @@ if __name__ == "__main__":
         case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
+        sim.robot_speed = mpc_config.getfloat('mpc_env', 'max_speed')
         done = False
 
         ###### MPC initialization ######
@@ -198,6 +221,9 @@ if __name__ == "__main__":
 
                 obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
                 if done == True:
+                    break
+                print(type(sim.robot_pos), type(follow_pos), sim.robot_pos, follow_pos)
+                if np.linalg.norm(sim.robot_pos - follow_pos) < sim.goal_radius:
                     break
 
             #################### RL model output the follow_pos #############################

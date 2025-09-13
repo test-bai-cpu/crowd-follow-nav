@@ -14,7 +14,6 @@ from sim.mpc.ped_nopred_mpc import PedNoPredMPC
 from controller.group_linear_mpc import GroupLinearMPC
 from controller.crowd_aware_MPC import CrowdAwareMPC
 from controller import mpc_utils
-from obs_data_parser import ObsDataParser
 
 #### RL model
 import torch
@@ -35,6 +34,28 @@ def set_random_seed(seed):
 if __name__ == "__main__":
     # configue and logs
     args = get_args()
+    
+    args.group = True
+    args.record = True
+    args.react = True
+    args.animate = True
+    
+    dataset_name = "eth"       # "syn" / "eth"
+    
+    args.exp_name = f"e001_orca_{dataset_name}_orca"
+    
+    # args.exp_name = f"e001_orca_{dataset_name}_sfm"
+    
+    # args.exp_name = f"e001_orca_{dataset_name}_noreact"       # args.react = False
+    # args.react = False
+    
+    if dataset_name == "syn":
+        args.dset_file = "datasets_syn.yaml"        # eth: datasets.yaml, syn: datasets_syn.yaml
+    else:
+        args.dset_file = "datasets.yaml"
+    args.collision_radius = 0.5
+    args.output_dir = f"exps/results_quality/orca/{args.exp_name}"
+    
     set_random_seed(args.seed)
 
     if not os.path.exists(args.output_dir):
@@ -70,9 +91,11 @@ if __name__ == "__main__":
     args.envs = envs_arg
 
     ########## Initialize the evaluation results csv file ###########
-    data_file = "synthetic_test"
-    # data_file = "eth_ucy_test"
-    
+    if args.dset_file == "datasets.yaml":
+        data_file = "eth_ucy_test"
+    elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
+        data_file = "synthetic_test"
+
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
     eva_res_dir = os.path.join(sim.output_dir, "evas", f"{data_file}_{args.exp_name}.csv")
@@ -88,9 +111,6 @@ if __name__ == "__main__":
 
     sim.case_id_list.sort()
     # np.random.shuffle(sim.case_id_list)
-
-    mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
-    obs_data_parser = ObsDataParser(mpc_config, args)
     
     ######################### Get the test cases want to check ######################
     # fail_case_file = "exps/failed_cases_noreward.csv"
@@ -99,21 +119,16 @@ if __name__ == "__main__":
     # time_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Time']['case_id'].tolist()
     #################################################################################
     
-    # for case_id in sim.case_id_list:
-    for case_id_index in range(500):
-        case_id = random.choice(sim.case_id_list)
+    # for case_id in [573]:
+    for case_id in [1988, 1936, 1904, 1747, 1663]:
+    # for case_id_index in range(500):
+        # case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False
-        
-        ###### MPC initialization ######
-        # mpc = CrowdAwareMPC(mpc_config, args.use_a_omega, args.differential)
-        mpc = GroupLinearMPC(mpc_config, args, logger)
-        ################################
 
         time_step = 0
         while not done:
-            current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)
             obs, reward, done, info, time_step, info_dict = sim.step_only_orca()
 
         ################# save the robot path and human path #############################

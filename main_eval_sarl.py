@@ -285,15 +285,15 @@ if __name__ == "__main__":
     args.record = True
     args.react = True
     
-    dataset_name = "eth"       # "syn"
+    dataset_name = "syn"       # "syn"
     
-    # args.exp_name = f"e104_sarl_{dataset_name}_orca"
+    args.exp_name = f"e104_sarl_{dataset_name}_orca"
     # args.exp_name = f"e104_sarl_{dataset_name}_orcanorobot"
     # args.exp_name = f"e104_sarl_{dataset_name}_sfm"
     # args.exp_name = f"e104_sarl_{dataset_name}_sfmnorobot"
     
-    args.exp_name = f"e104_sarl_{dataset_name}_noreact"       # args.react = False
-    args.react = False
+    # args.exp_name = f"e104_sarl_{dataset_name}_noreact"       # args.react = False
+    # args.react = False
     
     
     if dataset_name == "syn":
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_sarl_20250902/{args.exp_name}"
+    args.output_dir = f"exps/results_sarl_20250912/{args.exp_name}"
 
     total_eval_episodes = 500
 
@@ -345,8 +345,10 @@ if __name__ == "__main__":
     # data_file = "synthetic_train"
     if args.dset_file == "datasets.yaml":
         data_file = "eth_ucy_test"
+        output_dir = "baseline_code/CrowdNav/crowd_nav/eth_weights_orca"
     elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
         data_file = "synthetic_test"
+        output_dir = "baseline_code/CrowdNav/crowd_nav/syn_weights_noreact"
 
     sim = Simulator(args, f"data/{data_file}.json", logger)
     os.makedirs(os.path.join(sim.output_dir, "evas"), exist_ok=True)
@@ -369,8 +371,6 @@ if __name__ == "__main__":
     # (SARL) config path setup
     policy_config_path = "baseline_code/CrowdNav/crowd_nav/configs/policy.config"
     env_config_path = "baseline_code/CrowdNav/crowd_nav/configs/env.config"
-
-    output_dir = "baseline_code/CrowdNav/crowd_nav"
     rl_weight_file = os.path.join(output_dir, 'rl_model.pth')
 
     # (SARL) configure policy

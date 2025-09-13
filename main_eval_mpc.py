@@ -39,13 +39,12 @@ if __name__ == "__main__":
     args.group = True
     args.record = True
     args.react = True
+    args.animate = True
     
-    dataset_name = "syn"       # "syn"
+    dataset_name = "eth"       # "syn"
     
     args.exp_name = f"e001_mpc_{dataset_name}_orca"
-    # args.exp_name = f"e001_mpc_{dataset_name}_orcanorobot"
     # args.exp_name = f"e001_mpc_{dataset_name}_sfm"
-    # args.exp_name = f"e001_mpc_{dataset_name}_sfmnorobot"
     
     # args.exp_name = f"e001_mpc_{dataset_name}_noreact"       # args.react = False
     # args.react = False
@@ -56,7 +55,8 @@ if __name__ == "__main__":
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_mpc_20250904/{args.exp_name}"
+    # args.output_dir = f"exps/results_mpc_20250904_safeweight10/{args.exp_name}"
+    args.output_dir = f"exps/results_quality/mpc/{args.exp_name}"
     
     set_random_seed(args.seed)
 
@@ -127,9 +127,11 @@ if __name__ == "__main__":
     # time_fail_case_ids = fail_case_df[fail_case_df['fail_reason'] == 'Time']['case_id'].tolist()
     #################################################################################
     
+    # for case_id in [573]:
+    for case_id in [1988, 1936, 1904, 1747, 1663]:
     # for case_id in sim.case_id_list:
-    for case_id_index in range(500):
-        case_id = random.choice(sim.case_id_list)
+    # for case_id_index in range(500):
+        # case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
         done = False

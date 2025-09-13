@@ -190,6 +190,35 @@ class Simulator(object):
                 pos_history, vel_history = self.dataset_history(ped_idx)
                 self.pedestrians_pos_history.append(pos_history)
                 self.pedestrians_vel_history.append(vel_history)
+                
+
+        # DUMMY_ID = -1  # reserved; if negatives break anything, use a large sentinel like 10**9
+        # PAD_POS  = np.array([101.0, 101.0], dtype=np.float32)
+        # PAD_VEL  = np.array([0.0, 0.0], dtype=np.float32)
+        # PAD_GOAL = np.array([201.0, 201.0], dtype=np.float32)
+
+        # # Ensure lists (not numpy arrays), so appends won’t error
+        # if isinstance(self.pedestrians_idx, np.ndarray):  self.pedestrians_idx  = self.pedestrians_idx.tolist()
+        # if isinstance(self.pedestrians_pos, np.ndarray):  self.pedestrians_pos  = [np.asarray(p, dtype=np.float32) for p in self.pedestrians_pos]
+        # if isinstance(self.pedestrians_vel, np.ndarray):  self.pedestrians_vel  = [np.asarray(v, dtype=np.float32) for v in self.pedestrians_vel]
+        # if isinstance(self.pedestrians_goal, np.ndarray): self.pedestrians_goal = [np.asarray(g, dtype=np.float32) for g in self.pedestrians_goal]
+        # if self.history:
+        #     if isinstance(self.pedestrians_pos_history, np.ndarray): self.pedestrians_pos_history = self.pedestrians_pos_history.tolist()
+        #     if isinstance(self.pedestrians_vel_history, np.ndarray): self.pedestrians_vel_history = self.pedestrians_vel_history.tolist()
+
+        # # Append dummy state
+        # self.pedestrians_idx.append(DUMMY_ID)
+        # self.pedestrians_pos.append(PAD_POS)
+        # self.pedestrians_vel.append(PAD_VEL)
+        # self.pedestrians_goal.append(PAD_GOAL)
+
+        # if self.history:
+        #     T = max(1, int(self.history_steps))  # keep inner list length consistent
+        #     pos_hist = [PAD_POS.copy() for _ in range(T)]  # list of (2,) arrays
+        #     vel_hist = [PAD_VEL.copy() for _ in range(T)]
+        #     self.pedestrians_pos_history.append(pos_hist)
+        #     self.pedestrians_vel_history.append(vel_hist)
+                
         return
 
     def _ped_to_scans(self, robo_pos, ped_pos, ped_vel):
@@ -410,9 +439,23 @@ class Simulator(object):
 
         self.start_pos = case['start_pos']
         self.goal_pos = case['end_pos']
-        # self.start_pos = case['end_pos']
-        # self.goal_pos = case['start_pos']
-
+        # print(self.start_pos, self.goal_pos)
+        
+        
+        # self.start_pos = [15,5] # 573
+        # self.goal_pos = [-5,4]
+        # self.goal_pos = [-5,5]
+        
+        ##### TODO: add more people, by changing the end timestep. 
+        
+        # self.start_pos = [17,3] # 154
+        # self.goal_pos = [-5,3]
+        
+        # self.start_pos = [-2,6] # 1454
+        # self.goal_pos = [16,6]
+        
+        # self.start_pos = [2.88,-10.32] # 306
+        # self.goal_pos = [1.95,4.18]
 
         self.start_frame = case['start_frame']
         self.time_limit = self.start_frame + 3 * case['time_limit']
@@ -426,7 +469,7 @@ class Simulator(object):
 
         # by default, the robot faces the goal
         self.robot_th = np.arctan2(self.goal_pos[1] - self.robot_pos[1], self.goal_pos[0] - self.robot_pos[0]) # robot heading orientation
-        self.robot_vel = np.array([0, self.robot_th]) # robot_vel here means robot status (v, theta)
+        self.robot_vel = np.array([0, self.robot_th]) # robot_vel here means robot status (v, theta) # change to 0.5 for speed when step_only_sfm
         self.robot_path = np.array([self.robot_pos])
 
         # For saving the robot path and human path
@@ -547,13 +590,15 @@ class Simulator(object):
         robo_goal = np.array(self.goal_pos)
         dt = self.dt
         t_horizon = self.time_horizon
-        robo_max_v = self.robot_speed
+        # robo_max_v = self.robot_speed
+        robo_max_v = 1.0
         # setting pedestrian max speed to robot max speed
         ped_max_spd = robo_max_v
 
         # initialize the simulator
         # RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed)
-        sim = rvo2.PyRVOSimulator(dt, 2.5, 10, t_horizon, 2, 0.5, ped_max_spd)
+        # sim = rvo2.PyRVOSimulator(dt, 5, 10, t_horizon, 2, 2, ped_max_spd)
+        sim = rvo2.PyRVOSimulator(dt, 2.5, 10, t_horizon, 2, 1, ped_max_spd)
 
         # add the robot
         robot = sim.addAgent((robo_curr[0], robo_curr[1]))
@@ -568,7 +613,9 @@ class Simulator(object):
             ped_spd = np.linalg.norm(np.array(ped_vel[i]))
             sim.setAgentVelocity(ped, (ped_vel[i][0], ped_vel[i][1]))
             sim.setAgentMaxSpeed(ped, max(ped_spd, ped_max_spd))
-            sim.setAgentPrefVelocity(ped, self._get_pref_velocity(ped_pos[i], ped_goals[i], ped_max_spd))
+            # sim.setAgentPrefVelocity(ped, self._get_pref_velocity(ped_pos[i], ped_goals[i], ped_max_spd))
+            sim.setAgentPrefVelocity(ped, (ped_vel[i][0], ped_vel[i][1]))
+            # sim.setAgentPrefVelocity(ped, (0, 0))
             ped_list.append(ped)
 
         sim.doStep()
@@ -791,6 +838,7 @@ class Simulator(object):
 
         # update pedestrian positions
         if self.time > self.env.total_num_frames:
+        # if self.time > self.time_limit:
             # no more pedestrian data, so simulator is empty
             self.pedestrians_pos = []
             self.pedestrians_vel = []
@@ -911,12 +959,12 @@ class Simulator(object):
             frame = self.render()
             self.image_sequences.append(frame)
             ########### save the image to the output directory ##############
-            if self.time % 20 == 0:
-                tmp_fig = plt.figure()
-                tmp_ax = tmp_fig.add_subplot(111)
-                self.render_for_save(tmp_ax)
-                tmp_fig.savefig(f"{self.output_dir}/figs/{self.env_name}_{self.env_flag}/case_{self.case_id}/{self.time}.png")
-                plt.close(tmp_fig)
+            # if self.time % 20 == 0:
+            #     tmp_fig = plt.figure()
+            #     tmp_ax = tmp_fig.add_subplot(111)
+            #     self.render_for_save(tmp_ax)
+            #     tmp_fig.savefig(f"{self.output_dir}/figs/{self.env_name}_{self.env_flag}/case_{self.case_id}/{self.time}.png")
+            #     plt.close(tmp_fig)
             #################################################################
             if self.done:
                 self._write_video()
@@ -951,6 +999,8 @@ class Simulator(object):
         })
         ##############################################
 
+        reward = 0
+
         if self.done:
             raise ValueError("Environment is done. Please reset.")
 
@@ -970,13 +1020,20 @@ class Simulator(object):
             self.pedestrians_pos_history = []
             self.pedestrians_vel_history = []
             self.pedestrians_goal = []
-        else:
+            
+            _, _, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
+                old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+            
+        else:            
             if self.react:
-                tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
-                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
+                #     old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
 
-                # tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
-                    # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
+                    old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+
+                _, _, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
+                    old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
 
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
@@ -1031,10 +1088,12 @@ class Simulator(object):
                 self.pedestrians_vel_history = new_pedestrians_vel_history
                 self.pedestrians_goal = new_pedestrians_goal
             else:
+                _, _, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
+                    old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
                 # use dataset to update pedestrian positions
                 self._update_from_dataset()
-
-        self.robot_pos = new_robot_pos
+        
+        self.robot_pos = np.array(new_robot_pos)
         new_robot_theta = np.arctan2(new_robot_vel[1], new_robot_vel[0])
         new_robot_speed = np.linalg.norm(new_robot_vel)
         self.robot_vel = np.array([new_robot_speed, new_robot_theta]) # set robot_vel to [v, theta]
@@ -1120,6 +1179,8 @@ class Simulator(object):
         })
         ##############################################
 
+        reward = 0
+
         if self.done:
             raise ValueError("Environment is done. Please reset.")
 
@@ -1139,13 +1200,18 @@ class Simulator(object):
             self.pedestrians_pos_history = []
             self.pedestrians_vel_history = []
             self.pedestrians_goal = []
+            
+            _, _, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
+                old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
+        
         else:
             if self.react:
-                tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
+                # tmp_pedestrians_pos, tmp_pedestrians_vel = self.rvo_step(
+                #     old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                tmp_pedestrians_pos, tmp_pedestrians_vel = self.sfm_step(
                     old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
-
-                # tmp_pedestrians_pos, tmp_pedestrians_vel, new_robot_pos, new_robot_vel = self.rvo_step_return_robot(
-                    # old_robot_pos, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal)
+                _, _, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
+                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
 
                 tmp_pedestrians_idx = self.pedestrians_idx
                 if self.history:
@@ -1200,6 +1266,8 @@ class Simulator(object):
                 self.pedestrians_vel_history = new_pedestrians_vel_history
                 self.pedestrians_goal = new_pedestrians_goal
             else:
+                _, _, new_robot_pos, new_robot_vel = self.sfm_step_return_robot(
+                    old_robot_pos, old_robot_vx_vy, self.pedestrians_pos, self.pedestrians_vel, self.pedestrians_goal, self.group_labels)
                 # use dataset to update pedestrian positions
                 self._update_from_dataset()
 

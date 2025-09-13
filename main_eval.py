@@ -62,6 +62,30 @@ def set_random_seed(seed):
 if __name__ == "__main__":
     # configue and logs
     args = get_args()
+    
+    args.group = True
+    args.record = True
+    args.react = True
+    args.rl_model_weight = "n_samples_0100000"
+    args.follow_weight = 1.0
+    args.animate = True
+    
+    dataset_name = "eth"       # "syn" / "eth"
+    
+    # args.exp_name = f"e016_rw100_1_1_react_{dataset_name}_orca"
+    
+    # args.exp_name = f"e016_rw100_1_1_react_{dataset_name}_sfm"
+    
+    args.exp_name = f"e016_rw100_1_1_noreact_sfmnorobot_{dataset_name}"       # args.react = False
+    args.react = False
+    
+    if dataset_name == "syn":
+        args.dset_file = "datasets_syn.yaml"        # eth: datasets.yaml, syn: datasets_syn.yaml
+    else:
+        args.dset_file = "datasets.yaml"
+    args.collision_radius = 0.5
+    args.output_dir = f"exps/results_quality/MPC_RL_2/{args.exp_name}"
+
     set_random_seed(args.seed)
 
     if not os.path.exists(args.output_dir):
@@ -135,8 +159,8 @@ if __name__ == "__main__":
 
     train_info = {}
     ########################################################################
-    sim.case_id_list.sort()
-    # np.random.shuffle(sim.case_id_list)
+    # sim.case_id_list.sort()
+    np.random.shuffle(sim.case_id_list)
 
     mpc_config = mpc_utils.parse_config_file("controller/crowd_mpc.config")
     obs_data_parser = ObsDataParser(mpc_config, args)
@@ -159,12 +183,19 @@ if __name__ == "__main__":
     # for case_id in random_case_id:
     # for case_id in collision_fail_case_ids:
     
-    # for case_id in [2105]:
+    # for case_id in [1988, 1936, 1904, 1747, 1663]:
+    for case_id in [1454]: # 1481
+    # for case_id in [573]:
+    # for case_id in [306]:
     # for case_id in sim.case_id_list:
-    for case_id_index in range(500):
-        case_id = random.choice(sim.case_id_list)
+    # for case_id_index in range(500):
+        # case_id = random.choice(sim.case_id_list)
         sim.logger.info(f"Now in the case id: {case_id}")
         obs = sim.reset(case_id)
+        
+        # if sim.env_name == "ucy" and sim.env_flag == 2:
+        #     continue
+        
         done = False
         
         ###### MPC initialization ######

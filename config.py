@@ -39,7 +39,8 @@ def get_args():
     parser.add_argument(
         "--robot-speed",
         type=float,
-        default=1.0,
+        default=1.75,
+        # default=1.0,
         help="maximum robot speed (avg human walking speed)"
     )
 

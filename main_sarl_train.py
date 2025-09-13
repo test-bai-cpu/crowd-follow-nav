@@ -230,7 +230,7 @@ class Explorer(object):
             # Assume imitation 70_000 and rl 230_000 transitions
             if self.n_transitions >= 70000 and imitation_learning:
                 sim.logger.info("Collect more than 70000 transitions.")
-                break
+                # break
             elif self.n_transitions >= 300000:
                 sim.logger.info("Collect more than 300000 transitions.")
                 break
