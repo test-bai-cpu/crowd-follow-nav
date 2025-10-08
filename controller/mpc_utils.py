@@ -62,6 +62,10 @@ def circdiff(circular_1, circular_2):
     return abs(res)
 
 
+def wrap_to_pi(angle):
+    return (angle + np.pi) % (2 * np.pi) - np.pi
+
+
 def distance_wrap_2d(p1, p2):
     ad = circdiff(p1[1], p2[1])
     ld = abs(p1[0] - p2[0])

@@ -80,7 +80,7 @@ if __name__ == "__main__":
     else:
         args.dset_file = "datasets.yaml"
     args.collision_radius = 0.5
-    args.output_dir = f"exps/results_retrain/orca/{args.exp_name}"
+    args.output_dir = f"exps/for_osaka_expo/orca/{args.exp_name}"
 
     set_random_seed(args.seed)
 
@@ -118,7 +118,8 @@ if __name__ == "__main__":
 
     ########## Initialize the evaluation results csv file ###########
     if args.dset_file == "datasets.yaml":
-        data_file = "eth_ucy_train"
+        # data_file = "eth_ucy_train"
+        data_file = "all_eth_ucy_origin"
     elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
         data_file = "synthetic_train"
 
@@ -212,7 +213,7 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
 
-            for mpc_steps_in_one_follow_state in range(10):
+            for mpc_steps_in_one_follow_state in range(2):
                 ###### MPC generate action ######
                 # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
                 action_mpc = mpc.get_action(obs, target, follow_state)
@@ -222,9 +223,9 @@ if __name__ == "__main__":
                 obs, reward, done, info, time_step, info_dict = sim.step(action_mpc, follow_state)
                 if done == True:
                     break
-                print(type(sim.robot_pos), type(follow_pos), sim.robot_pos, follow_pos)
-                if np.linalg.norm(sim.robot_pos - follow_pos) < sim.goal_radius:
-                    break
+                # print(type(sim.robot_pos), type(follow_pos), sim.robot_pos, follow_pos)
+                # if np.linalg.norm(sim.robot_pos - follow_pos) < sim.goal_radius:
+                #     break
 
             #################### RL model output the follow_pos #############################
             current_state, target, robot_speed, robot_motion_angle = obs_data_parser.get_robot_state(obs)

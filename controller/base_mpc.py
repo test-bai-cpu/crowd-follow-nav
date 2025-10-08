@@ -57,8 +57,6 @@ class BaseMPC(ABC):
         self.mpc_horizon = config.getint('mpc_env', 'mpc_horizon')
         self.max_mp_steps = config.getint('mpc_env', 'max_mp_steps')
         
-        self.max_obs_distance = config.getfloat('mpc_env', 'max_obs_distance')
-        
         # self.use_a_omega = config.getboolean('mpc_env', 'use_a_omega')
         # logging.info('[MPCEnv] Config {:} = {:}'.format('pref_speed', self.pref_speed))
         # logging.info('[MPCEnv] Config {:} = {:}'.format('max_speed', self.max_speed))

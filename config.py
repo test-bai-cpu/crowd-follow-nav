@@ -61,7 +61,8 @@ def get_args():
     parser.add_argument(
         "--goal_radius",
         type=float,
-        default=0.5,
+        # default=0.5,
+        default=1.0,
         help="in navigation smaller than this means goal reached"
     )
 
@@ -270,14 +271,6 @@ def get_args():
         default=1,
         help="reward weight for following the group"
     )
-
-    parser.add_argument(
-        "--rl-humans",
-        type=int,
-        default=10,
-        help="maximum number of humans for rl"
-    )
-
 
     parser.add_argument(
         '--gpu-id',
