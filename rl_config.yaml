@@ -8,7 +8,7 @@ train_policy_freq: 2
 target_network_update_freq: 1
 report_rollout_freq: 5000
 report_loss_freq: 5000
-save_model_freq: 100000
+save_model_freq: 50000
 eval_freq: 5000000
 
 # RL - Environment
