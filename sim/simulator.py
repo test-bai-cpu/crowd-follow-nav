@@ -514,10 +514,10 @@ class Simulator(object):
 
         if self.animate:
             self.fig, self.ax = plt.subplots()
-            self.ax.set_xlim(0, 16)
-            self.ax.set_ylim(0, 14)
+            # self.ax.set_xlim(0, 16)
+            # self.ax.set_ylim(0, 14)
             self.ax.set_aspect(1)
-            self.ax.set_axis_off()
+            # self.ax.set_axis_off()
             self.image_sequences = []
             frame = self.render_v2()      # will use self.ax
             self.image_sequences.append(frame)

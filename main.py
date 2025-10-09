@@ -4,6 +4,7 @@ import logging
 import yaml
 import numpy as np
 import random
+import math
 import time
 import pickle
 
@@ -66,14 +67,17 @@ if __name__ == "__main__":
     args.group = True
     args.record = True
     args.react = True
+    # args.animate = True
     args.follow_weight = 1.0
 
     dataset_name = "eth"       # "syn" / "eth"
     
-    args.exp_name = f"e001_mpcrl_{dataset_name}_orca"
+    # args.exp_name = f"e001_mpcrl_{dataset_name}_orca"
+    # args.exp_name = f"e003_expo_{dataset_name}_orca"
     
-    # args.exp_name = f"e001_mpcrl_{dataset_name}_noreact"       # args.react = False
-    # args.react = False
+    # # args.exp_name = f"e001_mpcrl_{dataset_name}_noreact"       # args.react = False
+    args.exp_name = f"e003_expo_{dataset_name}_noreact"       # args.react = False
+    args.react = False
     
     if dataset_name == "syn":
         args.dset_file = "datasets_syn.yaml"        # eth: datasets.yaml, syn: datasets_syn.yaml
@@ -118,8 +122,8 @@ if __name__ == "__main__":
 
     ########## Initialize the evaluation results csv file ###########
     if args.dset_file == "datasets.yaml":
-        # data_file = "eth_ucy_train"
-        data_file = "all_eth_ucy_origin"
+        data_file = "eth_ucy_train"
+        # data_file = "all_eth_ucy_origin"
     elif args.dset_file == "datasets_syn.yaml": # synthetic datasets
         data_file = "synthetic_train"
 
@@ -196,9 +200,38 @@ if __name__ == "__main__":
 
             ## Now rerange the follow_pos and follow_vel
             # follow_pos = (follow_pos + 1) * (max_follow_pos_delta + max_follow_pos_delta) / 2 - max_follow_pos_delta     # Since max_follow_pos_delta > 0
-            follow_pos = follow_pos * max_follow_pos_delta     # Since max_follow_pos_delta > 0
+            # follow_pos = follow_pos * max_follow_pos_delta     # Since max_follow_pos_delta > 0
+            
+            ######## force the follow point to head to goal, in front of the robot ##########
+            ## follow_pos is r, theta. 
+            follow_pos_r = (follow_pos[0] + 1) * 0.5 * max_follow_pos_delta
+            
+            r_min=0.5
+            r_max_cfg=max_follow_pos_delta
+            deg_max=60.0
+            eps=1e-6
+
+            d = sim.goal_pos - current_state[:2]
+            dist = np.linalg.norm(d)
+            d_hat = d / dist
+
+            # Map angle in [-1, 1] to [-phi_max, phi_max]
+            phi_max = deg_max * math.pi / 180.0
+            theta = follow_pos[1] * phi_max
+
+            # Map action to radius within [r_min, min(r_max_cfg, dist)]
+            r_max = min(r_max_cfg, dist)
+            rho = r_min + 0.5 * (follow_pos[0] + 1.0) * (r_max - r_min)
+
+            c, s = np.cos(theta), np.sin(theta)
+            u = np.array([c * d_hat[0] - s * d_hat[1],
+                        s * d_hat[0] + c * d_hat[1]])
+
+            follow_pos = current_state[:2] + rho * u
+            #################################################################################
+            
             # revert the relative pos to global pos
-            follow_pos = follow_pos + current_state[:2]
+            # follow_pos = follow_pos + current_state[:2]
 
             # follow_vel = (follow_vel + 1) * (mpc.max_speed + mpc.max_rev_speed) / 2 - mpc.max_rev_speed     # Since max_rev_speed > 0
             # follow_vel = follow_vel + np.array([robot_vx, robot_vy])
@@ -213,7 +246,7 @@ if __name__ == "__main__":
 
             # follow_state = obs_data_parser.get_follow_state(obs, robot_motion_angle, target) ## follow_state is (4,): pos_x, pos_y, speed, motion_angle
 
-            for mpc_steps_in_one_follow_state in range(2):
+            for mpc_steps_in_one_follow_state in range(3):
                 ###### MPC generate action ######
                 # action_mpc, _ = mpc.get_action(obs, current_state, target, nearby_human_state, follow_state)
                 action_mpc = mpc.get_action(obs, target, follow_state)
